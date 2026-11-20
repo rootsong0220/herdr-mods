@@ -28,7 +28,7 @@ A keyboard-first popup listing every agent: first the ones that need you, then t
 - **Order:** blocked before done, newest first (higher `seq`) inside each status. Then every other agent, newest first.
 - **Filter:** split what you typed on whitespace. A row stays if every word appears, ignoring case, in its title, space name or tab name. Typing moves the selection back to the first row.
 - **Keys:** ↑/↓ move the selection and wrap around at both ends, keeping the selected row scrolled into view. Enter or a click closes the popup and runs `agent.focus` for that agent. Esc closes the popup.
-- **Opening:** `alt-2` opens it (from `keys.json`). Without that key, use `mod.open {"name":"inbox"}`.
+- **Opening:** `alt-2` opens it (from `keys.json`). Without that key, use `mod.open {"name":"inbox"}`, with the name it was installed under.
 - The list updates live as agents change status, with no timer.
 
 ## Built from
@@ -38,8 +38,8 @@ A keyboard-first popup listing every agent: first the ones that need you, then t
   - `herdr`: `agents()`, `run("agent.focus", { terminal })`, `props().overlay`, `closeOverlay`, `theme()`.
   - `gpui-base`: `InputState` / `Input` for the filter, `ScrollHandle` for the list, `v_flex` / `h_flex`.
   - Keys are handled in `on_key_down` on the focus-tracked root. Submit comes from the input's `submit` event.
-- **`keys.json`:** `{ "global": { "alt-2": "mod.open:inbox" } }`. Merge it into yours.
-- It doesn't call `exec` or `hc`, doesn't reach the network, and reads no files. Its only art is the shipped spinner.
+- **`keys.json`:** `{ "global": { "alt-2": "mod.open:inbox" } }`. Merge it into yours, pointing at the installed name if the mod was renamed.
+- It doesn't call `exec` or `hc`, doesn't reach the network, and reads no files of its own. Its only art is the shipped spinner, `mods/workspace-chrome/spinner.svg`.
 
 ## Watch out
 
@@ -50,6 +50,8 @@ A keyboard-first popup listing every agent: first the ones that need you, then t
 - `alt-2` may already be bound in your `keys.json`. Pick another key rather than replacing one you use. On macOS, `alt-2` is Option+2, which some keyboard layouts use to type a character.
 
 ## Done when
+
+If the mod was renamed on install (its name was taken), use the installed name below.
 
 - `herdr-app check mods/inbox` passes.
 - `alt-2` opens the popup with the filter focused.
