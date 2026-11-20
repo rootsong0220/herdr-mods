@@ -32,7 +32,7 @@ Herdr's shipped main layout with a live CPU and memory meter at the right end of
 - **`mods/sysmon`:** a `View`.
   - `init` starts `cx.timer.every(2000, …)` and reads once right away.
   - Each tick reads `/proc/stat` and `/proc/meminfo` together with `readTextFile` inside `cx.spawn`, then calls `cx.notify()`.
-  - CPU % = 100 × (1 − Δidle / Δtotal) between two ticks. The numbers come from the first `cpu` line of `/proc/stat`: idle = idle + iowait, total = sum of all fields.
+  - CPU % = 100 × (1 − Δidle / Δtotal) between two ticks. The numbers come from the first `cpu` line of `/proc/stat`: idle = idle + iowait, total = sum of the first eight fields (user through steal). Leave out guest and guest_nice: the kernel already counts them in user and nice.
   - Memory used = `MemTotal − MemAvailable` (kB), so page cache doesn't count as used.
   - The bar fill uses `.transition("width", 400)`.
 - It doesn't call `exec` or `hc`, doesn't reach the network, and reads no files other than the two under `/proc`.
@@ -47,6 +47,8 @@ Herdr's shipped main layout with a live CPU and memory meter at the right end of
 - 300px fits `100%` and `30.3/30.3G` at the default zoom. Widen the block for machines with over 99 GiB.
 
 ## Done when
+
+If the mod was renamed on install (its name was taken), use the installed name below.
 
 - `herdr-app check mods/sysmon` passes, and `layout.switch {"name":"sysmon-status"}` shows the meters at the bottom right.
 - Within 4 s of switching, CPU shows a percentage and MEM's used matches `free -h`'s total minus available.

@@ -8,7 +8,8 @@ import { theme, readTextFile } from "herdr";
 const EVERY_MS = 2000;
 
 export function cpuTimes(stat) {
-  const f = stat.split("\n")[0].trim().split(/\s+/).slice(1).map(Number);
+  // user..steal only: guest and guest_nice are already counted in user and nice.
+  const f = stat.split("\n")[0].trim().split(/\s+/).slice(1, 9).map(Number);
   return { idle: f[3] + (f[4] || 0), total: f.reduce((a, b) => a + b, 0) };
 }
 
