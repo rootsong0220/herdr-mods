@@ -22,7 +22,7 @@ Herdr's shipped main layout with a live CPU and memory meter at the right end of
 - It refreshes every 2 s. The bar width animates to the new value over 400ms.
 - Nothing is clickable and it has no keys.
 - Agent status doesn't affect it. The rest of the status bar behaves like the shipped one.
-- On a machine without `/proc` (macOS), the segment is an empty strip in the chrome color.
+- On a machine without `/proc` (macOS, Windows), the segment is an empty strip in the chrome color.
 
 ## Built from
 
@@ -43,6 +43,7 @@ Herdr's shipped main layout with a live CPU and memory meter at the right end of
 - Every `cx.notify()` redraws the whole window. Keep the interval at 2 s or longer, and animate with `.transition` rather than a faster timer.
 - It reads the machine the app runs on. A space on another machine (`machine`) still shows local numbers.
 - If `/proc/stat` and `/proc/meminfo` both read as `null`, treat the platform as unsupported and draw nothing, rather than showing `--` for ever.
+- To support macOS or Windows, add a path that runs a program through `exec` (`vm_stat` and `sysctl` on macOS, PowerShell on Windows) and pick it from `window().platform`. That path is untested.
 - 300px fits `100%` and `30.3/30.3G` at the default zoom. Widen the block for machines with over 99 GiB.
 
 ## Done when
@@ -51,4 +52,4 @@ Herdr's shipped main layout with a live CPU and memory meter at the right end of
 - Within 4 s of switching, CPU shows a percentage and MEM's used matches `free -h`'s total minus available.
 - Running `yes > /dev/null` on a few cores raises CPU within 4 s, and the bar grows smoothly.
 - While the numbers change (`9%` ↔ `37%`), the bars stay in place.
-- On macOS the segment is blank and nothing errors.
+- On macOS and Windows the segment is blank and nothing errors.

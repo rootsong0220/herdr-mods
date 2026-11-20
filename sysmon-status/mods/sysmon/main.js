@@ -1,5 +1,5 @@
 // Status-bar segment: CPU and memory of the machine running Herdr, from /proc every 2 s.
-// Linux only: without /proc (macOS) it draws nothing.
+// Linux only: without /proc (macOS, Windows) it draws nothing.
 
 import { View, div } from "gpui-kit";
 import { h_flex } from "gpui-base";
