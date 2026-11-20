@@ -10,12 +10,12 @@ A popup of your tabs in the order you last looked at them. It opens with the cur
 - **Header:** `Recent tabs` (15px, semibold, `foreground`).
 - **Filter box:** 36px tall, radius 9, 1px `accent` border, `background` fill, placeholder `Go to a recent tab…`. It has focus as soon as the popup opens.
 - **Rows** are 32px tall, radius 7, with 10px side padding and a 10px gap. One row per tab, in every space. From left to right:
-  - **Status glyph, 12px wide, for the tab's status:** working is the shipped spinner (`mods/workspace-chrome/spinner.svg`, spinning every 900ms, `working`). Blocked and done are `●` in their status color. Anything else is `○` in `dim`.
+  - **Status glyph, 12px wide, for the tab's status:** working is the shipped spinner (`mods/workspace-chrome/spinner.svg`, spinning every 900ms, `working`). Blocked and done are `●` in their status color. Anything else is `○`, in the theme's color for that status if it has one, otherwise `dim`.
   - **Tab name:** `foreground`, at most 220px, truncated. The tab you're on is semibold.
   - **Agent titles:** the titles of the agents in that tab joined with ` · `, 11.5px, `muted`. They fill the remaining width and truncate.
   - **Space name:** 11px, `dim`. The tab you're on reads `<space> · now`.
 - The selected row and the hovered row have the `hover` background.
-- **Footer:** `Enter go to tab · Esc` (11px, `dim`). With no tabs, `No tabs` replaces the list.
+- **Footer:** `Enter go to tab · Esc` (11px, `dim`). When no row is left (no tabs, or nothing matches the filter), `No tabs` replaces the list and Enter just closes the popup.
 
 ## How it behaves
 
@@ -31,7 +31,7 @@ A popup of your tabs in the order you last looked at them. It opens with the cur
 - **One mod, two roles.** `init` checks `props().overlay`:
   - **Tracker:** without an overlay, the copy is the tracker. Its `render` reads `focused().tab`. If that tab isn't already first in the shared value `recent.tabs`, it moves the tab to the front (`setShared`, capped at 100 ids). Then it returns an empty `div()`. Herdr re-renders it on every focus change, so it needs no timer.
   - **Popup:** with an overlay, the copy is the popup.
-- **The tracker has to sit in the layout** as a 0px block, for example in the status bar. In the shipped `main`, the `status` node is a block. Turn it into a row that keeps the shipped segment and adds the tracker:
+- **The tracker has to sit in the layout** as a 0px block, for example in the status bar. In the shipped `main`, the `status` node is a block. Turn it into a row that keeps the shipped segment and adds the tracker. If `status` is already a row, add the block to its children instead.
   ```json
   { "id": "status", "type": "row", "size": { "px": 28 }, "children": [
       { "id": "status-base", "type": "block", "content": { "mod": "workspace-status" } },
@@ -43,12 +43,12 @@ A popup of your tabs in the order you last looked at them. It opens with the cur
   - `herdr`: `spaces()` (with `tabs`), `agents()` (`tab`, `title`), `focused()`, `shared` / `setShared`, `run("tab.select", { id })`, `props().overlay`, `closeOverlay`, `theme()`.
   - `gpui-base`: `InputState` / `Input` and `ScrollHandle`.
 - **`keys.json`:** `{ "global": { "alt-e": "mod.open:recent" } }`. Merge it into yours, pointing at the installed name if the mod was renamed.
-- It doesn't call `exec` or `hc`, doesn't reach the network, and reads no files of its own. Its only art is the shipped spinner.
+- It doesn't call `exec` or `hc`, doesn't reach the network, and reads no files of its own. Its only art is the shipped spinner, `mods/workspace-chrome/spinner.svg`.
 
 ## Watch out
 
-- **Without the 0px block, nothing records visits.** The popup still opens, but in plain sidebar order, and Enter no longer flips back. A mod-only install copies `mods/` and `keys.json`, so the block has to be added to the layout by hand, or by the installing agent.
-- **If the mod was renamed on install, rename it in that block too.**
+- **Without the 0px block, nothing records visits.** The popup still opens, but it keeps showing whatever history was recorded before (plain sidebar order if there is none), and Enter no longer flips back. A mod-only install copies `mods/` and `keys.json`, so the block has to be added to the layout by hand, or by the installing agent.
+- **If the mod was renamed on install, rename it in that block too.** If it was renamed because another copy is installed, also change the shared key (`recent.tabs` in `main.js`, e.g. to `<new name>.tabs`), or both trackers write one history.
 - Herdr has no visit timestamps. The order is only as good as the tracker's uptime: switching to a layout without the block stops recording.
 - Popups size to their content. Give the list a definite height (`min(500, rows × 32)`), or it collapses to 0.
 - Focus the input in `init` and once more 600ms later. Opening the overlay can take focus back from the first call.
@@ -62,5 +62,5 @@ If the mod was renamed on install (its name was taken), use the installed name b
 - `herdr-app check mods/recent` passes, and the layout has a 0px block with `mod: "recent"`.
 - Visit tab A, then tab B, then press `alt-e`: B is first and reads `· now`, and the cursor is on A. Enter goes to A.
 - Press `alt-e` and Enter again: you're back on B.
-- Restart Herdr, then press `alt-e`: the order is unchanged.
+- Restart Herdr, then press `alt-e`: the order is unchanged, except that the tab focused after the restart moves to the front.
 - Typing an agent's title filters the list down to its tab. Esc closes the popup without moving.
