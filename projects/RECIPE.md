@@ -9,14 +9,15 @@ One popup to switch spaces and to open projects: the spaces you have open come f
 - A popup at the top of the window, 40px down, 640px wide, up to 80% of the window height. Its background is `popover`, with 18px padding, a 10px gap and 13px text.
 - **Header:** `Spaces · projects  (N roots, M pins)` (15px, semibold, `foreground`), and on the right a `+ Add root` button.
 - **Buttons** (here and on the selected row): 24px tall, radius 6, 8px side padding, 1px `border`, `background` fill, `raised` on hover, an 11.5px `foreground` label and its key in 10.5px `dim` (`Ctrl+O`, `Ctrl+P`, `Ctrl+R`).
-- **Filter box:** 36px tall, radius 9, 1px `accent` border, `background` fill, placeholder `Open a project…`. It has focus as soon as the popup opens.
+- **Filter box:** 36px tall, radius 9, 1px `accent` border, `background` fill, placeholder `Open a project, or type a folder path to add it as a root…`. It has focus as soon as the popup opens.
 - An error line in `blocked` (11.5px), when `projects.json` can't be parsed or a save lost a race (the list is reread and the message stays). Non-array `roots` or `pins` count as empty.
 - **List:** at most 480px tall, rows 30px tall, radius 7, 10px side padding and gap. A 1px `border` line separates open spaces from folders.
   - **Open space:** a green `●` (`ansi2`), then the space name (semibold for the shown space). Next comes `Needs input` (`blocked`) or `Done · unseen` (`done`) at 11px when the space needs you. Last is `N tabs · <folder>` in 11px `dim`, with `~` for the home folder, at most 220px and truncated.
   - **Folder:** `★` in `accent` when pinned, else a 12px gap. Then the folder name (`foreground`, truncates), a `root` tag (10.5px, 1px `border`, radius 4, `dim`) when it is a root, and its parent path (11px `dim`, at most 220px, truncated).
   - **The selected row** (spaces and folders) ends with two buttons: `Pin` / `Unpin` (`Ctrl+P`) and `Make root` / `Remove root` (`Ctrl+R`).
+  - **Typed folder path:** when the filter starts like a path (`C:\`, `D:/`, `/`, `~/`, or just `~`) and that folder isn't a root yet, the first row reads `+  Add <path> as a root` (`+` in `accent`) with `Enter` in `dim` on the right. The other rows are still filtered below it.
   - The selected row and the hovered row have the `hover` background.
-- When nothing is listed, the list area shows one of: `Scanning…`, `No project matches`, or `No roots yet: + Add root (Ctrl+O) to list your project folders`.
+- When nothing is listed, the list area shows one of: `Scanning…`, `No project matches`, or `No roots yet: + Add root (Ctrl+O), or type a folder path`.
 - **Footer** (11px, `dim`): `↑↓ move · Enter open · Esc close`, starting with `Scanning… · ` while folders are being read.
 
 ## How it behaves
@@ -32,6 +33,7 @@ One popup to switch spaces and to open projects: the spaces you have open come f
 - **Enter or a click** closes the popup, then:
   - `space.select` when the row is an open space.
   - Otherwise `space.new {name: <folder name>, folder, machine: ""}`. The new space is on this computer.
+- **A typed path:** Enter (or a click) on the `Add … as a root` row lists that folder first. If it can't be listed, the error line reads `Not a folder, or can't be listed: <path>` and nothing is saved. Otherwise it becomes a root and stays in the popup, so its folders show up right away. A trailing `\` or `/` is dropped. This is the quick way to a root outside the home folder (`C:\dev\ideaprojects`), since the picker can't be told where to start.
 - **`+ Add root` or ctrl+o** opens the system folder picker and adds the picked folder as a root. **The row's root button or ctrl+r** toggles the selected folder as a root. **Its pin button or ctrl+p** toggles its pin. Each change is saved to `projects.json` and the list is reread.
 - Pressing a button doesn't open the row: the button stops the press (`on_mouse_down` + `on_click` with `stop_propagation`).
 - **Esc** closes the popup.

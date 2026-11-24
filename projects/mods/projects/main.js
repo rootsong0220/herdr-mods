@@ -63,9 +63,9 @@ export default class Projects extends View {
     this.filter = "";
     this.at = null;
     this.scroll = ScrollHandle.new();
-    this.input = InputState.new({ placeholder: "Open a project…" });
+    this.input = InputState.new({ placeholder: "Open a project, or type a folder path to add it as a root…" });
     this.input.on("change", (_e, cx) => { this.filter = this.input.value(); this.at = 0; cx.notify(); });
-    this.input.on("submit", () => this.open(this.rows()[this.at]));
+    this.input.on("submit", (_e, cx) => this.open(this.rows()[this.at], cx));
     this.input.focus();
     this.handle = cx.focus_handle();
     if (checking()) return;
@@ -121,19 +121,39 @@ export default class Projects extends View {
     });
   }
 
-  // Open spaces first (sidebar order), then candidate folders not already open.
+  // A folder path typed into the filter (C:\dev\x, /srv/x, ~/x), when it isn't a root yet.
+  typedRoot() {
+    const t = this.filter.trim();
+    if (!/^([A-Za-z]:[\\/]|\/|~([\\/]|$))/.test(t)) return null;
+    const p = this.abs(t.length > 3 ? t.replace(/[\\/]+$/, "") : t);
+    return this.cfg.roots.some((r) => this.abs(r) === p) ? null : p;
+  }
+
+  // Adds a typed path as a root once it is known to be a folder that can be listed.
+  addTypedRoot(path, cx) {
+    cx.spawn(async (cx) => {
+      if (await subfolders(path, this.sep) === null) { this.error = `Not a folder, or can't be listed: ${path}`; cx.notify(); return; }
+      this.save("roots", path, cx);
+    });
+  }
+
+  // Open spaces first (sidebar order), then candidate folders not already open. A typed folder
+  // path comes first, as a row that adds it as a root.
   rows() {
+    const typed = this.typedRoot();
     const words = this.filter.toLowerCase().split(/\s+/).filter(Boolean);
     const match = (s) => words.every((w) => s.toLowerCase().includes(w));
     const shown = spaces();
     const openFolders = new Set(shown.map((s) => s.folder));
     return [
+      ...(typed ? [{ addRoot: typed }] : []),
       ...shown.filter((s) => match(`${s.name} ${s.folder}`)).map((s) => ({ space: s, path: s.folder })),
       ...(this.dirs ?? []).filter((p) => !openFolders.has(p) && match(p)).map((p) => ({ path: p })),
     ];
   }
 
-  open(r) {
+  open(r, cx) {
+    if (r?.addRoot) { if (cx) this.addTypedRoot(r.addRoot, cx); return; }
     closeOverlay(props().overlay);
     if (!r) return;
     const shown = r.space ?? spaces().find((s) => s.folder === r.path);
@@ -148,7 +168,7 @@ export default class Projects extends View {
     if (this.at === null) this.at = Math.max(0, rows.findIndex((r) => r.space?.active));
     this.at = Math.min(this.at, Math.max(0, rows.length - 1));
     const sel = rows[this.at];
-    const firstDir = rows.findIndex((r) => !r.space);
+    const firstDir = rows.findIndex((r) => !r.space && !r.addRoot);
     const roots = new Set(this.cfg.roots.map((p) => this.abs(p)));
     const pins = new Set(this.cfg.pins.map((p) => this.abs(p)));
     // A press on a button must not reach the row under it (that would open the folder).
@@ -193,7 +213,7 @@ export default class Projects extends View {
       .when(!!this.error, (el) => el.child(div().text_size(11.5).text_color(t.blocked).child(this.error)))
       .child(
         !rows.length
-          ? div().h(30).text_color(t.dim).child(this.dirs === null ? "Scanning…" : this.cfg.roots.length ? "No project matches" : "No roots yet: + Add root (Ctrl+O) to list your project folders")
+          ? div().h(30).text_color(t.dim).child(this.dirs === null ? "Scanning…" : this.cfg.roots.length ? "No project matches" : "No roots yet: + Add root (Ctrl+O), or type a folder path")
           // Popups size to content: the list needs a definite height or it collapses to 0.
           : v_flex().id("pj-list").h(Math.min(480, rows.length * 30)).overflow_y_scrollbar().track_scroll(this.scroll).children(
             rows.map((r, i) => {
@@ -202,7 +222,13 @@ export default class Projects extends View {
                 .when(i === this.at, (el) => el.bg(t.hover))
                 .when(i === firstDir && i > 0, (el) => el.border_t(1).border_color(t.border))
                 .hover((s) => s.bg(t.hover))
-                .on_click(() => this.open(r));
+                .on_click((_e, cx) => this.open(r, cx));
+              if (r.addRoot) {
+                return row
+                  .child(div().w(12).flex_none().text_color(t.accent).child("+"))
+                  .child(div().flex_1().truncate().text_color(t.foreground).child(`Add ${r.addRoot} as a root`))
+                  .child(div().text_size(11).text_color(t.dim).child("Enter"));
+              }
               if (r.space) {
                 const st = r.space.status;
                 return row
