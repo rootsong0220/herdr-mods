@@ -47,7 +47,7 @@ A keyboard-first popup listing every agent: first the ones that need you, then t
 - The scroll index counts the section header rows. The selected row's index in the scroll list is its row index plus the headers above it.
 - Focus the input in `init` and once more 600ms later. Opening the overlay can take focus back from the first call.
 - "Done" is Herdr's status for an agent that finished while you weren't looking. It turns idle once you've seen it, so the row moves to `Other agents` by itself.
-- `alt-2` may already be bound in your `keys.json`. Pick another key rather than replacing one you use. On macOS, `alt-2` is Option+2, which some keyboard layouts use to type a character.
+- `alt-2` is `space.select:2` in Herdr's default keys, and may already be bound in your `keys.json`. Pick another key rather than replacing one you use. On macOS, `alt-2` is Option+2, which some keyboard layouts use to type a character.
 
 ## Done when
 

@@ -1,1 +1,1 @@
-{ "global": { "ctrl-shift-j": "mod.open:projects" } }
+{ "global": { "alt-1": "mod.open:projects", "ctrl-shift-j": "mod.open:projects" } }

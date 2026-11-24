@@ -35,7 +35,7 @@ One popup to switch spaces and to open projects: the spaces you have open come f
 - **`+ Add root` or ctrl+o** opens the system folder picker and adds the picked folder as a root. **The row's root button or ctrl+r** toggles the selected folder as a root. **Its pin button or ctrl+p** toggles its pin. Each change is saved to `projects.json` and the list is reread.
 - Pressing a button doesn't open the row: the button stops the press (`on_mouse_down` + `on_click` with `stop_propagation`).
 - **Esc** closes the popup.
-- **Opening:** `ctrl-shift-j` opens it (from `keys.json`). Without that key, use `mod.open {"name":"projects"}`, with the name the mod was installed under.
+- **Opening:** `alt-1` or `ctrl-shift-j` opens it (from `keys.json`). Without that key, use `mod.open {"name":"projects"}`, with the name the mod was installed under.
 
 ## Built from
 
@@ -52,7 +52,7 @@ One popup to switch spaces and to open projects: the spaces you have open come f
 - **The platform:** `window()` is null outside a window (`herdr-app check`), so the platform is told from `home()`: a drive letter (`C:`) means Windows.
 - **`herdr`:** `spaces()`, `home()`, `appHome()`, `readTextFile`, `writeTextFile`, `pickFolder`, `exec` (PowerShell on Windows, `find` when `readdir` fails elsewhere), `run("space.select" | "space.new")`, `props().overlay`, `closeOverlay`, `theme()`.
 - **`gpui-base`:** `InputState`/`Input` for the filter, `ScrollHandle` for the list.
-- **`keys.json`:** `{ "global": { "ctrl-shift-j": "mod.open:projects" } }`. Merge it into yours, pointing at the installed name if the mod was renamed.
+- **`keys.json`:** `{ "global": { "alt-1": "mod.open:projects", "ctrl-shift-j": "mod.open:projects" } }`. Merge it into yours, pointing at the installed name if the mod was renamed.
 - **What it reaches:** no network. It reads only your roots' and pins' folder names and its own `projects.json`.
 
 ## Watch out
@@ -63,13 +63,13 @@ One popup to switch spaces and to open projects: the spaces you have open come f
 - `pickFolder` takes no starting folder: the system picker opens where the OS chooses (Documents on Windows).
 - Spaces opened from here are always on this computer (`machine: ""`), and only local folders are listed. Open spaces on other machines are listed too; a local folder with the same path as one of them is hidden behind it.
 - Installed twice under two names, both copies share one `projects.json`.
-- `ctrl-shift-j` is free in Herdr's default keys. On macOS you may prefer a `cmd` key.
+- `alt-1` is `space.select:1` in Herdr's default keys, so merging it replaces that: ask first, and keep `ctrl-shift-j` (free by default) if the person says no. On macOS, Option+1 types a character on some keyboard layouts.
 - Tested on Linux. The Windows and macOS paths (the separator, the PowerShell fallback) are written but untested.
 
 ## Done when
 
 - `herdr-app check mods/projects` passes.
-- `ctrl-shift-j` opens the popup with the filter focused and the cursor on the shown space.
+- `alt-1` (or `ctrl-shift-j`) opens the popup with the filter focused and the cursor on the shown space.
 - `+ Add root` (or ctrl+o), pick a folder under your home folder that isn't open as a space: it appears with a `root` tag, followed by the folders under it, and `projects.json` lists it as `~/…`.
 - Type part of a folder name and press Enter: a new space opens there. Open the popup again: that folder is now listed under open spaces.
 - `Pin` on the selected folder adds a `★` and the button reads `Unpin`; pressing it again removes the star. ctrl+p does the same.
