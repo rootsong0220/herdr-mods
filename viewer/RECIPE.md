@@ -25,7 +25,7 @@ Ctrl-click (Cmd-click on macOS) a file path or a web address in any terminal, an
 
 - **What a click opens:**
   - A **web address** (`http`/`https`) shows the page.
-  - A **file** shows as an image (`png`, `jpg`, `gif`, `webp`, `bmp`, `svg`), as markdown (`md`, `markdown`), as a page (`html`, `htm`), or as text if its first 8 KB hold no NUL byte and it is at most 1 MiB (what Herdr's `readTextFile` reads).
+  - A **file** shows as an image (`png`, `jpg`, `gif`, `webp`, `bmp`, `svg`), as markdown (`md`, `markdown`), as a page (`html`, `htm`), or as text if its first 8 KB hold no NUL byte and it is at most 1 MiB (what Herdr's `readTextFile` reads). The extension decides first, so a markdown file over 1 MiB still opens as markdown and shows a read error.
   - Folders, bigger files and other binary files (PDF, archives) are passed on (`"pass"`). Herdr then opens them with its usual opener, but only if it resolved the path itself. A file the viewer found in the repo or the home folder has no opener target there.
 - **Line numbers:** a path ending in `:42`, `:42:7` or `(42,7)` opens code at line 42.
 - **Finding the file, in order:**
@@ -35,7 +35,7 @@ Ctrl-click (Cmd-click on macOS) a file path or a web address in any terminal, an
   4. The one file in that repo, tracked or untracked and not ignored, whose path ends with the printed one.
   5. The one file under the home folder whose path ends with it.
 
-  Steps 4 and 5 open nothing when two or more files match. Step 5 skips hidden folders and `node_modules`, needs a `/` in the printed path, and stops after 4 seconds.
+  Steps 4 and 5 open nothing when two or more files match. Step 5 skips hidden folders and `node_modules`, goes 8 folders deep, needs a `/` in the printed path, and stops after 4 seconds.
 - **Herdr's link text can run past the path:** it glues on the Korean particle after it, or two paths and the words between them. When the text as given finds nothing, it is split on spaces. Leading quotes and brackets are dropped from each piece, as are trailing non-ASCII letters and punctuation, except a `(42,7)` line suffix. If exactly one piece is a file, that file opens. When the text as given does find a file, the other pieces are not tried.
 - **Toasts instead of another app:** `File not found` when nothing matches (including a path with several suffix matches in step 4 or 5), and `Which file?` with the candidates when several pieces each match a file. Neither falls back to an external editor.
 - **`file://` links** are read as local paths only when the host is empty or `localhost`. Another host stays a string that matches nothing.
@@ -70,7 +70,7 @@ Ctrl-click (Cmd-click on macOS) a file path or a web address in any terminal, an
   - If Herdr or Node is too old or missing, tell the person that the viewer won't work at all, and ask before installing.
   - If only `git` is missing, paths relative to a repo root aren't found; if only the browser is missing, web pages and `.html` files fail. Tell the person, and ask whether to install anyway.
   - Don't install these programs yourself unless the person says so.
-  - At run time, a click that can't start `node` shows a `Viewer needs Node.js 22+` toast and goes to Herdr's usual opener.
+  - At run time, a click whose `node` can't start or times out shows a `Viewer needs Node.js 22+` toast and goes to Herdr's usual opener. The version itself isn't checked then: an older Node fails only on pages (no built-in `WebSocket`).
 - **Link handlers only work on a personal layout.** Herdr adds `"viewer"` to the shown layout's `link_handlers` the first time it sees the mod, but only on a clone, not on the shipped `main`. Clone first (`layout.clone {"name":"main","as":"my-main"}`). A script that rebuilds the clone must add `"viewer"` back to `link_handlers`, keeping any other handlers; the first matching mod gets the click.
 - **Only Ctrl/Cmd-click is offered to mods.** A plain click selects text or goes to the program.
 - **Bare file names (`README.md`) and backslash paths are never offered to mods.** Herdr skips them, so the agent has to print `./README.md` or `docs/x.md`.
@@ -84,7 +84,7 @@ Ctrl-click (Cmd-click on macOS) a file path or a web address in any terminal, an
 ## Done when
 
 - `herdr-app check mods/viewer` passes, and the shown (cloned) layout has `"link_handlers": ["viewer"]`.
-- In a git repo, run `printf 'see %s:3를\n' "$(git ls-files | head -1)"` and Ctrl-click the path: a pane opens on the right with that file at line 3.
+- In a git repo, run `printf 'see %s:3를\n' "$(git ls-files | grep / | head -1)"` (a path with a `/`: Herdr skips bare file names) and Ctrl-click the path: a pane opens on the right with that file at line 3.
 - Ctrl-click a `.md` path: it renders. Edit the file: the pane follows within 2 s.
 - Ctrl-click a `.png` path: the image shows, fitted to the pane.
 - `echo https://example.com` and Ctrl-click it: after a few seconds the page shows sharp and `Browser` opens it in the default browser.
