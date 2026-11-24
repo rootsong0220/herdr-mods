@@ -7,14 +7,17 @@ import { WEB, candidates, kindOf } from "./kinds.js";
 
 const RESOLVE_TIMEOUT_MS = 8000;
 
+class NodeFailed extends Error {}
+
 function remember(entry) {
   setShared("viewer.clicks", [entry, ...((shared("viewer.clicks") ?? []).slice(0, 4))]);
 }
 
 async function lookup(c, link, source, first) {
+  // A rejection means node couldn't run (missing, or too slow): that is not "file not found".
   const r = await exec("node", [`${appHome()}/mods/viewer/resolve.mjs`, source.cwd ?? "", c.path, first ? (link.path ?? "") : ""],
-    { timeout: RESOLVE_TIMEOUT_MS }).catch(() => null);
-  if (!r || r.code !== 0) return null;
+    { timeout: RESOLVE_TIMEOUT_MS }).catch((e) => { throw new NodeFailed(String(e?.message ?? e)); });
+  if (r.code !== 0) return null;
   const [target, content] = r.stdout.trim().split("\t");
   return { target, content, line: c.line };
 }
@@ -48,7 +51,14 @@ export async function handleLink({ link, source }) {
     show({ target: link.url, kind: "page", line: null }, source);
     return "handled";
   }
-  const hit = await resolveFile(link, source).catch(() => null);
+  let hit;
+  try {
+    hit = await resolveFile(link, source);
+  } catch (e) {
+    if (!(e instanceof NodeFailed)) throw e;
+    notify({ title: "Viewer needs Node.js 22+", body: `Couldn't run node: ${e.message}`, level: "error", timeout: 8000 });
+    return "pass";
+  }
   remember({ at: Date.now(), raw: link.raw, path: link.path ?? null, cwd: source.cwd, hit });
   if (!hit) {
     notify({ title: "File not found", body: `${link.raw}\nnot under ${source.cwd ?? "?"}, its git repo or your home folder`, level: "warning", timeout: 5000 });

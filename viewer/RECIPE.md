@@ -66,6 +66,11 @@ Ctrl-click (Cmd-click on macOS) a file path or a web address in any terminal, an
 
 ## Watch out
 
+- **Check the requirements before installing, and ask when one is missing.** Run `herdr-app --version` (0.1.17 or newer: older versions have no link handlers), `node --version` (22 or newer), `git --version`, and look for Chrome, Chromium or Edge (on PATH, or the usual install folder on macOS and Windows).
+  - If Herdr or Node is too old or missing, tell the person that the viewer won't work at all, and ask before installing.
+  - If only `git` is missing, paths relative to a repo root aren't found; if only the browser is missing, web pages and `.html` files fail. Tell the person, and ask whether to install anyway.
+  - Don't install these programs yourself unless the person says so.
+  - At run time, a click that can't start `node` shows a `Viewer needs Node.js 22+` toast and goes to Herdr's usual opener.
 - **Link handlers only work on a personal layout.** Herdr adds `"viewer"` to the shown layout's `link_handlers` the first time it sees the mod, but only on a clone, not on the shipped `main`. Clone first (`layout.clone {"name":"main","as":"my-main"}`). A script that rebuilds the clone must add `"viewer"` back to `link_handlers`, keeping any other handlers; the first matching mod gets the click.
 - **Only Ctrl/Cmd-click is offered to mods.** A plain click selects text or goes to the program.
 - **Bare file names (`README.md`) and backslash paths are never offered to mods.** Herdr skips them, so the agent has to print `./README.md` or `docs/x.md`.
