@@ -19,27 +19,42 @@ export function expand(p, homeDir, sep) {
   return p === "~" ? homeDir : p.startsWith("~/") ? homeDir + sep + p.slice(2).split("/").join(sep) : p;
 }
 export function shorten(p, homeDir, sep) {
+  // Windows keeps full paths: home() can be a profile's Documents or a network share there,
+  // and a "~" saved under one would point elsewhere under another.
+  if (sep === "\\") return p;
   return p === homeDir ? "~" : p.startsWith(homeDir + sep) ? "~/" + p.slice(homeDir.length + 1).split(sep).join("/") : p;
 }
 
-// The folders directly under `dir`, without hidden ones (.git, .cache: never projects). fs reads
-// only inside the home folder, so other places are listed by the platform's own command.
+// The folders directly under `dir` (null if it can't be listed), without hidden ones (.git, .cache:
+// never projects).
 async function subfolders(dir, sep) {
+  if (sep === "\\") return windowsSubfolders(dir);
   try {
     return (await readdir(dir, { withFileTypes: true })).filter((e) => e.isDirectory() && !e.name.startsWith(".")).map((e) => dir + sep + e.name).sort();
   } catch {
-    const r = sep === "\\"
-      ? await exec("powershell", ["-NoProfile", "-Command", "Get-ChildItem -Directory -Force -LiteralPath $args[0] | ForEach-Object FullName", dir], { timeout: SCAN_TIMEOUT_MS }).catch(() => null)
-      : await exec("find", [dir, "-mindepth", "1", "-maxdepth", "1", "-type", "d"], { timeout: SCAN_TIMEOUT_MS }).catch(() => null);
-    return r && r.code === 0 ? r.stdout.split(/\r?\n/).filter((p) => p && !nameOf(p).startsWith(".")).sort() : null;
+    // fs reads only inside the home folder.
+    const r = await exec("find", [dir, "-mindepth", "1", "-maxdepth", "1", "-type", "d"], { timeout: SCAN_TIMEOUT_MS }).catch(() => null);
+    return r && r.code === 0 ? r.stdout.split("\n").filter((p) => p && !nameOf(p).startsWith(".")).sort() : null;
   }
+}
+
+// As Herdr's own files mod does on Windows. Arguments after -Command are joined into the script,
+// so the path goes inside it as a quoted literal (PowerShell also reads curly quotes as quotes).
+// Its output uses the console code page unless set to UTF-8.
+async function windowsSubfolders(dir) {
+  const literal = "'" + dir.replace(/['‘’‚‛]/g, "$&$&") + "'";
+  const script = "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); " +
+    `Get-ChildItem -LiteralPath ${literal} -Directory -Force -ErrorAction Stop | ForEach-Object { $_.FullName }`;
+  const r = await exec("powershell", ["-NoProfile", "-Command", script], { timeout: SCAN_TIMEOUT_MS }).catch(() => null);
+  return r && r.code === 0 ? r.stdout.split(/\r?\n/).filter((p) => p && !nameOf(p).startsWith(".")).sort() : null;
 }
 
 export default class Projects extends View {
   init(_props, cx) {
     this.home = home();
-    // window() is null outside a window (herdr-app check), so the home path tells the platform.
-    this.sep = this.home.includes("\\") ? "\\" : "/";
+    // window() is null outside a window (herdr-app check), so the home path tells the platform:
+    // a drive letter means Windows, whichever slash home() uses.
+    this.sep = /^[A-Za-z]:/.test(this.home) ? "\\" : "/";
     this.file = `${appHome()}/projects.json`;
     this.cfgText = null;
     this.cfg = { roots: [], pins: [] };
