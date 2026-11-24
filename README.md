@@ -20,7 +20,7 @@ Everything was built and tested on Linux with Herdr 0.1.16–0.1.17. "Written fo
 
 | Folder | Linux | macOS | Windows | Herdr | Also needs |
 |---|---|---|---|---|---|
-| `all-in-one` | Install tested (not switched to live yet) | Written for (no meter) | Written for (no meter) | **0.1.17+** | What `viewer` needs |
+| `all-in-one` | Install tested (not switched to live yet) | Written for (meter left out) | Written for (meter left out) | **0.1.17+** | What `viewer` needs |
 | `keymap` | Tested | Mostly (`alt-1`/`alt-2` may type characters) | Keys are platform-neutral | 0.1.16+ | `projects`, `inbox`, `recent` for their keys |
 | `sysmon-status` | Tested | No (the meter stays empty) | No (the meter stays empty) | 0.1.16+ | Nothing (reads `/proc`) |
 | `inbox` | Tested | Written for | Written for | 0.1.16+ | Nothing |

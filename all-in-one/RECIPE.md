@@ -21,7 +21,7 @@ Everything in this repo at once: Herdr's main window with a CPU / memory meter i
 
 Each piece behaves as its own recipe says. Together:
 
-- The meter updates every 2 s on Linux. On macOS and Windows its 300px stays empty.
+- The meter updates every 2 s. It is Linux only: on macOS and Windows the install leaves it out.
 - Recent records every tab you look at while this layout is shown. Switching to a layout without the 0px block stops recording.
 - The layout's root has `"link_handlers": ["viewer"]`, so Ctrl/Cmd-clicks in terminals go to the viewer first.
 - **Keys**, whichever set the person picks at install:
@@ -55,11 +55,11 @@ This folder has no `mods/`, so the usual steps in `AGENTS.md` (in the Herdr home
 1. **Requirements.** Check them and tell the person what's missing before copying anything. Ask whether to go on without it, and don't install programs yourself.
    - `herdr-app --version` must be 0.1.17 or newer, for the viewer's link handlers.
    - For the viewer: Node 22+, `git`, and Chrome, Chromium or Edge (see its recipe).
-   - On macOS or Windows the meter stays empty. Offer to drop the `status-sysmon` block and the `sysmon` mod.
+   - On macOS or Windows (check with `uname` or the OS you run on), don't ask: leave out the `sysmon` mod and remove the `status-sysmon` block from the layout's status row. The meter would only be an empty 300px strip there. Tell the person you left it out.
 2. **Read every file** of this folder and of the five mod folders above. Tell the person what runs programs, reads files outside its folder or reaches the network:
    - `projects` reads and writes `projects.json` in the Herdr home (shared with any other copy of it), and runs `find` or PowerShell only when it can't list a folder itself.
    - `viewer` runs `node`, `git`, a headless browser and the system opener, and loads the web pages you click.
-   - `sysmon` reads `/proc`.
+   - `sysmon` reads `/proc` (Linux only).
    - `inbox` and `recent` use Herdr's data and the shipped `mods/workspace-chrome/spinner.svg`; `recent` writes its visit list to Herdr's shared state.
 3. **Copy** `layouts/all-in-one.json` and the five mod folders into the Herdr home. Never overwrite.
    - When a name is taken, rename the new copy and update `"mod"` in the layout, `link_handlers`, and the renames each mod's recipe lists.
@@ -80,8 +80,8 @@ This folder has no `mods/`, so the usual steps in `AGENTS.md` (in the Herdr home
 
 ## Done when
 
-- `herdr-app check` passes for `sysmon`, `inbox`, `recent`, `projects` and `viewer` (or their installed names).
-- After `layout.switch {"name":"all-in-one"}`, the status bar shows `CPU` and `MEM` meters on the right (Linux).
+- `herdr-app check` passes for `inbox`, `recent`, `projects` and `viewer`, and on Linux `sysmon` (or their installed names).
+- On Linux, after `layout.switch {"name":"all-in-one"}`, the status bar shows `CPU` and `MEM` meters on the right. On macOS and Windows, the layout has no `status-sysmon` block and no `sysmon` mod was copied.
 - The chosen Inbox, Recent and Projects keys open the installed copies' popups.
 - Visit tab A, then tab B, then open Recent: B is the first row and the cursor is on A.
 - Ctrl/Cmd-clicking a file path in a terminal opens it in a viewer pane to the right.
