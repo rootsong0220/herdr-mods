@@ -57,7 +57,7 @@ agent에게 이 폴더 주소를 주세요. 예: "https://github.com/rootsong022
   - `ctrl-e`는 모든 셸에서 줄 끝 이동을 막습니다.
   - `ctrl-n`은 다음 명령 기록 불러오기를 막고, 많은 TUI에서 "아래로"도 막습니다.
   - `ctrl-b` 조합은 셸의 한 글자 뒤로 가기(`ctrl-b`)를 막고, Herdr 안에서 tmux를 쓰면 tmux 키와 겹칩니다.
-  - 셸에서 이 키들을 계속 쓰려면 거절하세요. recent는 RECIPE가 제안하는 `alt-e`로 옮겨도 됩니다.
+  - 셸에서 이 키들을 계속 쓰려면 거절하세요. recent는 Herdr 기본값에서 비어 있는 `alt-e`로 옮겨도 됩니다.
 - **`ctrl-shift-l` 교체를 받아들이면, 이 키로는 더 이상 레이아웃이 바뀌지 않습니다.** 명령 팔레트(`ctrl-shift-p`)나 `herdr-app do layout.switch`로 바꾸세요.
 - macOS의 여러 키보드 배열에서는 Option+숫자가 문자를 입력하므로, `alt-1`/`alt-2`가 Herdr까지 오지 않을 수 있습니다.
 - Linux와 Herdr 0.1.16–0.1.17에서 확인했습니다.

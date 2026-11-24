@@ -1,1 +1,1 @@
-{ "global": { "alt-e": "mod.open:recent" } }
+{ "global": { "ctrl-e": "mod.open:recent" } }

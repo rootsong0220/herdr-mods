@@ -50,7 +50,7 @@ Everything else in the file is the same as Herdr 0.1.17's defaults.
   - `ctrl-e` takes end-of-line away from every shell.
   - `ctrl-n` takes next-history (and "down" in many TUIs).
   - The `ctrl-b` chords take `ctrl-b` (back one character), and clash with tmux running inside Herdr.
-  - If you want these keys in the shell, decline them, or move recent to `alt-e` as its recipe suggests.
+  - If you want these keys in the shell, decline them, or move recent to `alt-e`, which is free in Herdr's defaults.
 - **If you accept its replacement, `ctrl-shift-l` no longer switches layouts.** Switch from the command palette (`ctrl-shift-p`) or with `herdr-app do layout.switch`.
 - On macOS, Option+digit types characters on many keyboard layouts, so `alt-1`/`alt-2` may not reach Herdr.
 - Tested on Linux with Herdr 0.1.16–0.1.17.

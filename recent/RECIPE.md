@@ -23,7 +23,7 @@ A popup of your tabs in the order you last looked at them. It opens with the cur
 - **Cursor on open:** if the first row is the tab you're on, the cursor starts on the second row. Otherwise it starts on the first.
 - **Filter:** split what you typed on whitespace. A row stays if every word appears, ignoring case, in the tab name, the space name or the agent titles. Typing moves the cursor to the first row.
 - **Keys:** ↑/↓ move the cursor and wrap around at both ends. Enter or a click closes the popup and runs `tab.select` for that tab. Esc closes it.
-- **Opening:** `alt-e` opens it (from `keys.json`). Without that key, use `mod.open` with the name the mod was installed under.
+- **Opening:** `ctrl-e` opens it (from `keys.json`). Without that key, use `mod.open` with the name the mod was installed under.
 - **Visit history:** it updates whenever focus moves to another tab. It keeps the last 100 tabs and survives restarts.
 
 ## Built from
@@ -42,7 +42,7 @@ A popup of your tabs in the order you last looked at them. It opens with the cur
 - **APIs used:**
   - `herdr`: `spaces()` (with `tabs`), `agents()` (`tab`, `title`), `focused()`, `shared` / `setShared`, `run("tab.select", { id })`, `props().overlay`, `closeOverlay`, `theme()`.
   - `gpui-base`: `InputState` / `Input` and `ScrollHandle`.
-- **`keys.json`:** `{ "global": { "alt-e": "mod.open:recent" } }`. Merge it into yours, pointing at the installed name if the mod was renamed.
+- **`keys.json`:** `{ "global": { "ctrl-e": "mod.open:recent" } }`. Merge it into yours, pointing at the installed name if the mod was renamed.
 - It doesn't call `exec` or `hc`, doesn't reach the network, and reads no files of its own. Its only art is the shipped spinner, `mods/workspace-chrome/spinner.svg`.
 
 ## Watch out
@@ -52,7 +52,7 @@ A popup of your tabs in the order you last looked at them. It opens with the cur
 - Herdr has no visit timestamps. The order is only as good as the tracker's uptime: switching to a layout without the block stops recording.
 - Popups size to their content. Give the list a definite height (`min(500, rows × 32)`), or it collapses to 0.
 - Focus the input in `init` and once more 600ms later. Opening the overlay can take focus back from the first call.
-- `ctrl-e` is a natural key for this, but as a global key it takes end-of-line away from every shell in Herdr. That's why `alt-e` is the suggestion.
+- **`ctrl-e` takes end-of-line away from every shell in Herdr** (a global key wins over the program). Tell the person before merging it; if they want end-of-line back, bind `alt-e` instead, which is free in Herdr's defaults.
 - The value `recent.tabs` is shared app state. Another mod writing the same key would mix histories.
 
 ## Done when
@@ -60,7 +60,7 @@ A popup of your tabs in the order you last looked at them. It opens with the cur
 If the mod was renamed on install (its name was taken), use the installed name below.
 
 - `herdr-app check mods/recent` passes, and the layout has a 0px block with `mod: "recent"`.
-- Visit tab A, then tab B, then press `alt-e`: B is first and reads `· now`, and the cursor is on A. Enter goes to A.
-- Press `alt-e` and Enter again: you're back on B.
-- Restart Herdr, then press `alt-e`: the order is unchanged, except that the tab focused after the restart moves to the front.
+- Visit tab A, then tab B, then press `ctrl-e`: B is first and reads `· now`, and the cursor is on A. Enter goes to A.
+- Press `ctrl-e` and Enter again: you're back on B.
+- Restart Herdr, then press `ctrl-e`: the order is unchanged, except that the tab focused after the restart moves to the front.
 - Typing an agent's title filters the list down to its tab. Esc closes the popup without moving.

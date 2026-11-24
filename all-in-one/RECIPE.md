@@ -25,7 +25,7 @@ Each piece behaves as its own recipe says. Together:
 - Recent records every tab you look at while this layout is shown. Switching to a layout without the 0px block stops recording.
 - The layout's root has `"link_handlers": ["viewer"]`, so Ctrl/Cmd-clicks in terminals go to the viewer first.
 - **Keys**, whichever set the person picks at install:
-  - Suggested by each mod: `alt-2` Inbox, `alt-e` Recent, `alt-1` and `ctrl-shift-j` Projects. `alt-1` and `alt-2` replace Herdr's default `space.select:1`/`2`.
+  - Suggested by each mod: `alt-2` Inbox, `ctrl-e` Recent, `alt-1` and `ctrl-shift-j` Projects. `alt-1` and `alt-2` replace Herdr's default `space.select:1`/`2`, and `ctrl-e` takes end-of-line from the shell (`alt-e` is the free alternative).
   - The author's [keymap](../keymap/README.md): `alt-2` Inbox, `ctrl-e` Recent, `alt-1` and `ctrl-shift-j` Projects, and pane, tab and `ctrl-b` keys.
 
 ## Built from
