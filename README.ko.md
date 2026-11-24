@@ -38,4 +38,19 @@
 - https://github.com/rootsong0220/herdr-mods/tree/main/projects
 - https://github.com/rootsong0220/herdr-mods/tree/main/viewer
 
-agent는 Herdr 홈(`~/.config/herdr-app`, 또는 `$HERDR_APP_HOME`)의 `AGENTS.md`에 있는 절차대로 설치합니다. 각 항목의 `RECIPE.md`는 설치하는 agent가 읽는 문서라 영어로만 제공합니다.
+agent는 Herdr 홈(`~/.config/herdr-app`, 또는 `$HERDR_APP_HOME`)의 `AGENTS.md`에 있는 절차대로 설치합니다. 설치한 뒤에는 각 mod 폴더의 `.herdr-mods-commit`에 받은 repo의 커밋(`git rev-parse HEAD`)을 남겨야 다음 업데이트 때 무엇이 설치돼 있는지 알 수 있습니다. 각 항목의 `RECIPE.md`는 설치하는 agent가 읽는 문서라 영어로만 제공합니다.
+
+## 업데이트
+
+설치한 mod는 사본이라 저절로 업데이트되지 않습니다. agent에게 아래를 주세요.
+
+```
+https://github.com/rootsong0220/herdr-mods 에서 설치한 항목을 최신으로 업데이트해줘.
+- repo는 임시 폴더에 `git clone --depth 1`로 받아. 웹 페이지나 raw.githubusercontent.com으로 읽지 마 (최대 5분 캐시됨).
+- 내 Herdr 홈에서 이 repo로 설치한 mod를 찾아 (inbox, recent, projects, viewer, sysmon, 또는 설치할 때 바꾼 이름).
+- 각 mod의 .herdr-mods-commit을 clone의 커밋과 비교하고, 모든 파일을 repo 폴더와 diff로 비교해. diff 없이 최신이라고 판단하지 마.
+- 다른 파일은 교체해 (업데이트라 덮어써도 됨). 단 내가 직접 고친 파일이면 차이를 보여주고 먼저 물어봐. 다른 이름으로 설치한 mod는 RECIPE에 적힌 이름 변경을 다시 적용해.
+- 내 데이터(projects.json, Recent 방문 기록)는 그대로 둬. Windows라면 projects.json에서 "~/"로 시작하는 항목은 전체 경로로 바꿔.
+- 각 keys.json의 키를 병합하고, 내가 쓰는 키를 바꿔야 하면 먼저 물어봐.
+- clone의 커밋을 .herdr-mods-commit에 쓰고, 각 mod에 herdr-app check를 돌린 뒤 바뀐 점을 정리해줘.
+```

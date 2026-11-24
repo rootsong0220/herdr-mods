@@ -38,4 +38,19 @@ To add one, give your agent the folder URL, for example "add https://github.com/
 - https://github.com/rootsong0220/herdr-mods/tree/main/projects
 - https://github.com/rootsong0220/herdr-mods/tree/main/viewer
 
-It follows the steps in `AGENTS.md` in your Herdr home (`~/.config/herdr-app`, or `$HERDR_APP_HOME`).
+It follows the steps in `AGENTS.md` in your Herdr home (`~/.config/herdr-app`, or `$HERDR_APP_HOME`). After installing, it should write the repo's commit (`git rev-parse HEAD` of the clone) to `.herdr-mods-commit` in each installed mod folder, so a later update can tell what it has.
+
+## Updating
+
+Installed mods are copies: they don't update by themselves. Give your agent this:
+
+```
+Update what I installed from https://github.com/rootsong0220/herdr-mods.
+- Get the repo with `git clone --depth 1` into a temp folder. Don't read it through web pages or raw.githubusercontent.com (cached up to 5 minutes).
+- Find the mods installed from it in my Herdr home (inbox, recent, projects, viewer, sysmon, or the names they were installed under).
+- For each one, compare its .herdr-mods-commit with the clone's commit, and diff every file against the repo folder. Don't call it up to date without a diff.
+- Replace the files that differ (this is an update, so overwriting is fine), but if I changed a file myself, show the difference and ask first. Redo the renames the recipe lists for mods installed under another name.
+- Keep my data (projects.json, Recent's history). On Windows, rewrite projects.json entries starting with "~/" as full paths.
+- Merge the keys from each keys.json; ask before replacing a key I use.
+- Write the clone's commit to .herdr-mods-commit, run herdr-app check on each mod, and list what changed.
+```
