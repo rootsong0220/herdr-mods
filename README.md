@@ -28,17 +28,31 @@ Everything was built and tested on Linux with Herdr 0.1.16–0.1.17. "Written fo
 | `projects` | Tested | Written for | Written for | 0.1.16+ | Nothing; PowerShell on Windows for roots outside your home folder |
 | `viewer` | Tested | Written for | Written for | **0.1.17+** (terminal link handlers) | Node 22+, `git`; Chrome, Chromium or Edge for web pages and `.html` |
 
-To add one, give your agent the folder URL, for example "add https://github.com/rootsong0220/herdr-mods/tree/main/inbox":
+## Installing
+
+Open Claude Code (or another agent) inside Herdr and give it the prompt below, with the folder you want. `all-in-one` installs everything; any single folder works the same way.
+
+```
+Install https://github.com/rootsong0220/herdr-mods/tree/main/all-in-one into my Herdr.
+- Get the repo with `git clone --depth 1` into a temp folder, and follow AGENTS.md in my Herdr home (the folder with AGENTS.md) and the folder's RECIPE.md.
+- First check the requirements in the RECIPE (Herdr version, Node, git, browser) and show me the result. If something is missing, ask me before installing.
+- Don't overwrite anything. Back up keys.json as keys.json.bak-<date> before changing it.
+- Use the keys suggested by each mod; if one is already in use, ask me instead of replacing it.
+- Write the clone's commit (git rev-parse HEAD) to .herdr-mods-commit in each installed mod folder.
+- When done, run herdr-app check on each mod, switch to the new layout if there is one, and tell me what was installed, what was renamed, how to switch back and how to remove it all.
+```
+
+Folders:
 
 - https://github.com/rootsong0220/herdr-mods/tree/main/all-in-one
-- https://github.com/rootsong0220/herdr-mods/tree/main/keymap (merge into your keys)
+- https://github.com/rootsong0220/herdr-mods/tree/main/keymap (merged into your keys; see its README)
 - https://github.com/rootsong0220/herdr-mods/tree/main/sysmon-status
 - https://github.com/rootsong0220/herdr-mods/tree/main/inbox
 - https://github.com/rootsong0220/herdr-mods/tree/main/recent
 - https://github.com/rootsong0220/herdr-mods/tree/main/projects
 - https://github.com/rootsong0220/herdr-mods/tree/main/viewer
 
-It follows the steps in `AGENTS.md` in your Herdr home (`~/.config/herdr-app`, or `$HERDR_APP_HOME`). After installing, it should write the repo's commit (`git rev-parse HEAD` of the clone) to `.herdr-mods-commit` in each installed mod folder, so a later update can tell what it has.
+Each folder's `RECIPE.md` is written for the installing agent.
 
 ## Updating
 

@@ -28,17 +28,31 @@
 | `projects` | 검증 | 코드상 지원 | 코드상 지원 | 0.1.16 이상 | 없음. Windows에서 홈 폴더 밖 root는 PowerShell로 읽음 |
 | `viewer` | 검증 | 코드상 지원 | 코드상 지원 | **0.1.17 이상** (터미널 링크 처리) | Node 22 이상, `git`. 웹페이지·`.html`은 Chrome, Chromium 또는 Edge |
 
-설치하려면 agent에게 폴더 주소를 주세요. 예: "https://github.com/rootsong0220/herdr-mods/tree/main/inbox 추가해줘"
+## 설치
+
+Herdr 안에서 Claude Code(또는 다른 agent)를 열고 아래 문장을 주세요. 주소만 원하는 폴더로 바꾸면 됩니다. `all-in-one`은 전부를 한 번에 설치하고, 다른 폴더도 같은 방식으로 하나씩 설치할 수 있습니다.
+
+```
+https://github.com/rootsong0220/herdr-mods/tree/main/all-in-one 을 내 Herdr에 설치해줘.
+- repo는 임시 폴더에 `git clone --depth 1`로 받고, Herdr 홈(AGENTS.md가 있는 폴더)의 AGENTS.md와 그 폴더의 RECIPE.md 절차를 따라.
+- 먼저 RECIPE의 요구 사항(Herdr 버전, Node, git, 브라우저)을 확인해서 결과를 보여줘. 빠진 게 있으면 설치하기 전에 물어봐.
+- 기존 파일은 덮어쓰지 마. keys.json을 바꾸기 전에 keys.json.bak-<날짜>로 백업해.
+- 키는 각 mod가 제안하는 키로 하고, 이미 쓰는 키와 겹치면 바꾸지 말고 물어봐.
+- 설치한 각 mod 폴더의 .herdr-mods-commit에 clone의 커밋(git rev-parse HEAD)을 남겨.
+- 끝나면 각 mod에 herdr-app check를 돌리고, 새 레이아웃이 있으면 전환한 뒤, 설치한 것, 이름을 바꾼 것, 원래대로 돌아가는 방법, 전부 지우는 방법을 정리해줘.
+```
+
+폴더 주소:
 
 - https://github.com/rootsong0220/herdr-mods/tree/main/all-in-one
-- https://github.com/rootsong0220/herdr-mods/tree/main/keymap (내 키 설정에 병합)
+- https://github.com/rootsong0220/herdr-mods/tree/main/keymap (내 키 설정에 병합. 폴더의 README 참고)
 - https://github.com/rootsong0220/herdr-mods/tree/main/sysmon-status
 - https://github.com/rootsong0220/herdr-mods/tree/main/inbox
 - https://github.com/rootsong0220/herdr-mods/tree/main/recent
 - https://github.com/rootsong0220/herdr-mods/tree/main/projects
 - https://github.com/rootsong0220/herdr-mods/tree/main/viewer
 
-agent는 Herdr 홈(`~/.config/herdr-app`, 또는 `$HERDR_APP_HOME`)의 `AGENTS.md`에 있는 절차대로 설치합니다. 설치한 뒤에는 각 mod 폴더의 `.herdr-mods-commit`에 받은 repo의 커밋(`git rev-parse HEAD`)을 남겨야 다음 업데이트 때 무엇이 설치돼 있는지 알 수 있습니다. 각 항목의 `RECIPE.md`는 설치하는 agent가 읽는 문서라 영어로만 제공합니다.
+각 폴더의 `RECIPE.md`는 설치하는 agent가 읽는 문서라 영어로만 제공합니다.
 
 ## 업데이트
 
