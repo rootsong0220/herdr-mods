@@ -6,11 +6,23 @@
 
 | 폴더 | 종류 | 설명 |
 |---|---|---|
-| [`sysmon-status/`](sysmon-status/RECIPE.md) | 레이아웃 | 기본 `main` 레이아웃의 상태 바에 CPU·메모리 사용량 미터를 더한 것 (Linux 전용) |
+| [`sysmon-status/`](sysmon-status/RECIPE.md) | 레이아웃 | 기본 `main` 레이아웃의 상태 바에 CPU·메모리 사용량 미터를 더한 것 |
 | [`inbox/`](inbox/RECIPE.md) | mod | 모든 agent를 보여주는 키보드 중심 팝업. 입력을 기다리는 agent가 맨 위에 옵니다 (제안 키 `alt-2`) |
 | [`recent/`](recent/RECIPE.md) | mod | 최근에 본 탭 순서로 보여주는 팝업. 열고 Enter를 누르면 직전 두 탭을 오갑니다 (제안 키 `alt-e`). 레이아웃에 0px 칸이 하나 필요합니다. [Built from](recent/RECIPE.md#built-from) 참고 |
 | [`projects/`](projects/RECIPE.md) | mod | space 전환과 프로젝트 폴더 열기를 한 팝업에서. 열린 space가 먼저, 그다음 지정한 root 아래 폴더와 pin이 나옵니다 (제안 키 `ctrl-shift-j`) |
-| [`viewer/`](viewer/RECIPE.md) | mod | 터미널의 경로나 웹 주소를 Ctrl/Cmd-클릭하면 바로 옆 pane에 보여줍니다. 코드(클릭한 줄로 이동), markdown, 이미지, 웹페이지를 지원하고, agent가 repo 기준으로 쓴 상대 경로도 찾습니다. Node 22 이상, 웹페이지에는 Chrome 또는 Edge가 필요합니다 |
+| [`viewer/`](viewer/RECIPE.md) | mod | 터미널의 경로나 웹 주소를 Ctrl/Cmd-클릭하면 바로 옆 pane에 보여줍니다. 코드(클릭한 줄로 이동), markdown, 이미지, 웹페이지를 지원하고, agent가 repo 기준으로 쓴 상대 경로도 찾습니다. |
+
+## 지원 OS와 요구 사항
+
+모두 Linux에서 Herdr 0.1.16–0.1.17로 만들고 검증했습니다. "코드상 지원"은 해당 OS를 고려해 작성했지만 실제로 돌려 보지는 않았다는 뜻입니다.
+
+| 폴더 | Linux | macOS | Windows | Herdr | 그 밖에 필요한 것 |
+|---|---|---|---|---|---|
+| `sysmon-status` | 검증 | 미지원 (미터가 비어 보임) | 미지원 (미터가 비어 보임) | 0.1.16 이상 | 없음 (`/proc`를 읽음) |
+| `inbox` | 검증 | 코드상 지원 | 코드상 지원 | 0.1.16 이상 | 없음 |
+| `recent` | 검증 | 코드상 지원 | 코드상 지원 | 0.1.16 이상 | 없음 |
+| `projects` | 검증 | 코드상 지원 | 코드상 지원 | 0.1.16 이상 | 없음. Windows에서 홈 폴더 밖 root는 PowerShell로 읽음 |
+| `viewer` | 검증 | 코드상 지원 | 코드상 지원 | **0.1.17 이상** (터미널 링크 처리) | Node 22 이상, `git`. 웹페이지·`.html`은 Chrome, Chromium 또는 Edge |
 
 설치하려면 agent에게 폴더 주소를 주세요. 예: "https://github.com/rootsong0220/herdr-mods/tree/main/inbox 추가해줘"
 
