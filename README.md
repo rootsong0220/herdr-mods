@@ -1,3 +1,5 @@
+**English** | [한국어](README.ko.md)
+
 # herdr-mods
 
 Mods and layouts for [Herdr](https://herdr.dev). Each folder is one entry. Its `RECIPE.md` is the brief to build it from scratch, and the files in the folder are one build of it.
