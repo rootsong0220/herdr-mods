@@ -54,4 +54,4 @@ If the mod was renamed on install (its name was taken), use the installed name b
 - Within 4 s of switching, CPU shows a percentage and MEM's used matches `free -h`'s total minus available.
 - Running `yes > /dev/null` on a few cores raises CPU within 4 s, and the bar grows smoothly.
 - While the numbers change (`9%` ↔ `37%`), the bars stay in place.
-- On macOS and Windows the segment is blank and nothing errors.
+- On macOS and Windows the segment is blank and nothing errors. Before installing there, tell the person the meter will stay empty and ask whether they still want the layout.
