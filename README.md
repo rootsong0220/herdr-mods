@@ -34,12 +34,12 @@ Open Claude Code (or another agent) inside Herdr and give it the prompt below, w
 
 ```
 Install https://github.com/rootsong0220/herdr-mods/tree/main/all-in-one into my Herdr.
-- Get the repo with `git clone --depth 1` into a temp folder, and follow AGENTS.md in my Herdr home (the folder with AGENTS.md) and the folder's RECIPE.md.
+- Get the repo with `git clone --depth 1` into a temp folder. Without git, download https://github.com/rootsong0220/herdr-mods/archive/refs/heads/main.zip instead and read the commit from https://api.github.com/repos/rootsong0220/herdr-mods/commits/main. Then follow AGENTS.md in my Herdr home (the folder with AGENTS.md) and the folder's RECIPE.md.
 - First check the requirements in the RECIPE (Herdr version, Node, git, browser) and show me the result. If something is missing, ask me before installing.
 - Don't overwrite anything. Back up keys.json as keys.json.bak-<date> before changing it.
 - Use the keys suggested by each mod; if one is already in use, ask me instead of replacing it.
-- Write the clone's commit (git rev-parse HEAD) to .herdr-mods-commit in each installed mod folder.
-- When done, run herdr-app check on each mod, switch to the new layout if there is one, and tell me what was installed, what was renamed, how to switch back and how to remove it all.
+- Write that commit to .herdr-mods-commit in each installed mod folder.
+- When done, run herdr-app check on each mod (if the herdr-app command isn't found, say so and skip it), switch to the new layout if there is one, and tell me what was installed, what was renamed, how to switch back and how to remove it all.
 ```
 
 Folders:
@@ -60,11 +60,11 @@ Installed mods are copies: they don't update by themselves. Give your agent this
 
 ```
 Update what I installed from https://github.com/rootsong0220/herdr-mods.
-- Get the repo with `git clone --depth 1` into a temp folder. Don't read it through web pages or raw.githubusercontent.com (cached up to 5 minutes).
+- Get the repo with `git clone --depth 1` into a temp folder (without git: the zip and commit URLs from the install prompt). Don't read it through web pages or raw.githubusercontent.com (cached up to 5 minutes).
 - Find the mods installed from it in my Herdr home (inbox, recent, projects, viewer, sysmon, or the names they were installed under).
 - For each one, compare its .herdr-mods-commit with the clone's commit, and diff every file against the repo folder. Don't call it up to date without a diff.
 - Replace the files that differ (this is an update, so overwriting is fine), but if I changed a file myself, show the difference and ask first. Redo the renames the recipe lists for mods installed under another name.
 - Keep my data (projects.json, Recent's history). On Windows, rewrite projects.json entries starting with "~/" as full paths.
 - Merge the keys from each keys.json; ask before replacing a key I use.
-- Write the clone's commit to .herdr-mods-commit, run herdr-app check on each mod, and list what changed.
+- Write the commit to .herdr-mods-commit, run herdr-app check on each mod (skip it if the command isn't found), and list what changed.
 ```
