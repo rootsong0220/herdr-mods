@@ -7,15 +7,17 @@ One popup to switch spaces and to open projects: the spaces you have open come f
 ## What you see
 
 - A popup at the top of the window, 40px down, 640px wide, up to 80% of the window height. Its background is `popover`, with 18px padding, a 10px gap and 13px text.
-- **Header:** `Spaces · projects  (N roots, M pins)` (15px, semibold, `foreground`).
+- **Header:** `Spaces · projects  (N roots, M pins)` (15px, semibold, `foreground`), and on the right a `+ Add root` button.
+- **Buttons** (here and on the selected row): 24px tall, radius 6, 8px side padding, 1px `border`, `background` fill, `raised` on hover, an 11.5px `foreground` label and its key in 10.5px `dim` (`Ctrl+O`, `Ctrl+P`, `Ctrl+R`).
 - **Filter box:** 36px tall, radius 9, 1px `accent` border, `background` fill, placeholder `Open a project…`. It has focus as soon as the popup opens.
 - An error line in `blocked` (11.5px), when `projects.json` can't be parsed or a save lost a race (the list is reread and the message stays). Non-array `roots` or `pins` count as empty.
 - **List:** at most 480px tall, rows 30px tall, radius 7, 10px side padding and gap. A 1px `border` line separates open spaces from folders.
-  - **Open space:** a green `●` (`ansi2`), then the space name (semibold for the shown space). Next comes `Needs input` (`blocked`) or `Done · unseen` (`done`) at 11px when the space needs you. Last is `N tabs · <folder>` in 11px `dim`, with `~` for the home folder.
-  - **Folder:** `★` in `accent` when pinned, else a 12px gap. Then the folder name (`foreground`, truncates), a `root` tag (10.5px, 1px `border`, radius 4, `dim`) when it is a root, and its parent path (11px `dim`).
+  - **Open space:** a green `●` (`ansi2`), then the space name (semibold for the shown space). Next comes `Needs input` (`blocked`) or `Done · unseen` (`done`) at 11px when the space needs you. Last is `N tabs · <folder>` in 11px `dim`, with `~` for the home folder, at most 220px and truncated.
+  - **Folder:** `★` in `accent` when pinned, else a 12px gap. Then the folder name (`foreground`, truncates), a `root` tag (10.5px, 1px `border`, radius 4, `dim`) when it is a root, and its parent path (11px `dim`, at most 220px, truncated).
+  - **The selected row** (spaces and folders) ends with two buttons: `Pin` / `Unpin` (`Ctrl+P`) and `Make root` / `Remove root` (`Ctrl+R`).
   - The selected row and the hovered row have the `hover` background.
-- When nothing is listed, the list area shows one of: `Scanning…`, `No project matches`, or `No roots yet: ctrl+o to add one`.
-- **Footer** (11px, `dim`): `Enter open · ctrl+o add root · ctrl+r toggle root · ctrl+p toggle pin · Esc`, starting with `Scanning… · ` while folders are being read.
+- When nothing is listed, the list area shows one of: `Scanning…`, `No project matches`, or `No roots yet: + Add root (Ctrl+O) to list your project folders`.
+- **Footer** (11px, `dim`): `↑↓ move · Enter open · Esc close`, starting with `Scanning… · ` while folders are being read.
 
 ## How it behaves
 
@@ -30,7 +32,8 @@ One popup to switch spaces and to open projects: the spaces you have open come f
 - **Enter or a click** closes the popup, then:
   - `space.select` when the row is an open space.
   - Otherwise `space.new {name: <folder name>, folder, machine: ""}`. The new space is on this computer.
-- **ctrl+o** opens the system folder picker and adds the picked folder as a root. **ctrl+r** toggles the selected folder as a root. **ctrl+p** toggles its pin. Each change is saved to `projects.json` and the list is reread.
+- **`+ Add root` or ctrl+o** opens the system folder picker and adds the picked folder as a root. **The row's root button or ctrl+r** toggles the selected folder as a root. **Its pin button or ctrl+p** toggles its pin. Each change is saved to `projects.json` and the list is reread.
+- Pressing a button doesn't open the row: the button stops the press (`on_mouse_down` + `on_click` with `stop_propagation`).
 - **Esc** closes the popup.
 - **Opening:** `ctrl-shift-j` opens it (from `keys.json`). Without that key, use `mod.open {"name":"projects"}`, with the name the mod was installed under.
 
@@ -65,6 +68,6 @@ One popup to switch spaces and to open projects: the spaces you have open come f
 
 - `herdr-app check mods/projects` passes.
 - `ctrl-shift-j` opens the popup with the filter focused and the cursor on the shown space.
-- ctrl+o, pick a folder under your home folder that isn't open as a space: it appears with a `root` tag, followed by the folders under it, and `projects.json` lists it as `~/…`.
+- `+ Add root` (or ctrl+o), pick a folder under your home folder that isn't open as a space: it appears with a `root` tag, followed by the folders under it, and `projects.json` lists it as `~/…`.
 - Type part of a folder name and press Enter: a new space opens there. Open the popup again: that folder is now listed under open spaces.
-- ctrl+p on a folder adds a `★`; ctrl+p again removes it.
+- `Pin` on the selected folder adds a `★` and the button reads `Unpin`; pressing it again removes the star. ctrl+p does the same.

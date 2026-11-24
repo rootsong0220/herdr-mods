@@ -1,8 +1,8 @@
 // Switch spaces and open projects from one popup. Open spaces come first (cursor on the shown one),
 // then candidates: each root, every folder directly under it, and pins.
 // Roots and pins live in <Herdr home>/projects.json ({"roots": [...], "pins": [...]}, "~/" paths).
-// Type to filter, ↑/↓ Enter to open, Esc to leave. ctrl+o: add a root (folder picker),
-// ctrl+r: toggle the selected folder as a root, ctrl+p: toggle pin.
+// Type to filter, ↑/↓ Enter to open, Esc to leave. "+ Add root" (ctrl+o) picks a folder; the selected
+// row's buttons toggle its pin (ctrl+p) and root (ctrl+r).
 
 import { View, div } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, ScrollHandle } from "gpui-base";
@@ -99,6 +99,13 @@ export default class Projects extends View {
     });
   }
 
+  addRoot(cx) {
+    cx.spawn(async (cx) => {
+      const f = await pickFolder({ prompt: "Add root" });
+      if (f && !this.cfg.roots.map((p) => this.abs(p)).includes(f)) this.save("roots", f, cx);
+    });
+  }
+
   // Open spaces first (sidebar order), then candidate folders not already open.
   rows() {
     const words = this.filter.toLowerCase().split(/\s+/).filter(Boolean);
@@ -129,6 +136,16 @@ export default class Projects extends View {
     const firstDir = rows.findIndex((r) => !r.space);
     const roots = new Set(this.cfg.roots.map((p) => this.abs(p)));
     const pins = new Set(this.cfg.pins.map((p) => this.abs(p)));
+    // A press on a button must not reach the row under it (that would open the folder).
+    const button = (id, label, key, act) => h_flex().id(id).flex_none().h(24).px(8).gap(6).items_center().rounded(6)
+      .border_1().border_color(t.border).bg(t.background).text_size(11.5).text_color(t.foreground).cursor_pointer()
+      .hover((s) => s.bg(t.raised))
+      .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
+      .on_click((_e, cx) => { cx.stop_propagation(); act(cx); cx.notify(); })
+      .child(label).child(div().text_size(10.5).text_color(t.dim).child(key));
+    const actions = (p, i) => h_flex().gap(6).flex_none()
+      .child(button(`pj-pin-${i}`, pins.has(p) ? "Unpin" : "Pin", "Ctrl+P", (cx) => this.save("pins", p, cx)))
+      .child(button(`pj-root-${i}`, roots.has(p) ? "Remove root" : "Make root", "Ctrl+R", (cx) => this.save("roots", p, cx)));
     return v_flex()
       .id("projects")
       .track_focus(this.handle)
@@ -141,7 +158,7 @@ export default class Projects extends View {
       .on_key_down((e, cx) => {
         if (e.key === "escape") return closeOverlay(props().overlay);
         if (e.modifiers.control && e.key === "o") {
-          cx.spawn(async (cx) => { const f = await pickFolder({ prompt: "Add root" }); if (f && !roots.has(f)) this.save("roots", f, cx); });
+          this.addRoot(cx);
         } else if (e.modifiers.control && (e.key === "r" || e.key === "p")) {
           if (sel?.path) this.save(e.key === "r" ? "roots" : "pins", sel.path, cx);
         } else if (rows.length && (e.key === "down" || e.key === "up")) {
@@ -151,7 +168,9 @@ export default class Projects extends View {
         cx.stop_propagation();
         cx.notify();
       })
-      .child(div().text_size(15).font_semibold().text_color(t.foreground).child(`Spaces · projects  (${this.cfg.roots.length} roots, ${this.cfg.pins.length} pins)`))
+      .child(h_flex().items_center().gap(10)
+        .child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child(`Spaces · projects  (${this.cfg.roots.length} roots, ${this.cfg.pins.length} pins)`))
+        .child(button("pj-add-root", "+ Add root", "Ctrl+O", (cx) => this.addRoot(cx))))
       .child(
         h_flex().h(36).flex_none().px(10).items_center().rounded(9).border_1().border_color(t.accent).bg(t.background)
           .child(Input.new(this.input).flex_1().h_full().text_size(12.8).text_color(t.foreground)),
@@ -159,7 +178,7 @@ export default class Projects extends View {
       .when(!!this.error, (el) => el.child(div().text_size(11.5).text_color(t.blocked).child(this.error)))
       .child(
         !rows.length
-          ? div().h(30).text_color(t.dim).child(this.dirs === null ? "Scanning…" : this.cfg.roots.length ? "No project matches" : "No roots yet: ctrl+o to add one")
+          ? div().h(30).text_color(t.dim).child(this.dirs === null ? "Scanning…" : this.cfg.roots.length ? "No project matches" : "No roots yet: + Add root (Ctrl+O) to list your project folders")
           // Popups size to content: the list needs a definite height or it collapses to 0.
           : v_flex().id("pj-list").h(Math.min(480, rows.length * 30)).overflow_y_scrollbar().track_scroll(this.scroll).children(
             rows.map((r, i) => {
@@ -175,15 +194,17 @@ export default class Projects extends View {
                   .child(div().w(12).flex_none().text_color(t.ansi2).child("●"))
                   .child(div().flex_1().truncate().text_color(t.foreground).when(r.space.active, (d) => d.font_semibold()).child(r.space.name))
                   .when(st === "blocked" || st === "done", (el) => el.child(div().text_size(11).text_color(t[st] ?? t.dim).child(st === "blocked" ? "Needs input" : "Done · unseen")))
-                  .child(div().text_size(11).text_color(t.dim).child(`${r.space.tabs.length} tabs · ${this.rel(p ?? "")}`));
+                  .child(div().max_w(220).truncate().text_size(11).text_color(t.dim).child(`${r.space.tabs.length} tabs · ${this.rel(p ?? "")}`))
+                  .when(i === this.at && !!p, (el) => el.child(actions(p, i)));
               }
               return row
                 .child(div().w(12).flex_none().text_color(t.accent).child(pins.has(p) ? "★" : ""))
                 .child(div().flex_1().truncate().text_color(t.foreground).child(nameOf(p)))
                 .when(roots.has(p), (el) => el.child(div().text_size(10.5).px(5).rounded(4).border_1().border_color(t.border).text_color(t.dim).child("root")))
-                .child(div().text_size(11).text_color(t.dim).child(parentOf(this.rel(p))));
+                .child(div().max_w(220).truncate().text_size(11).text_color(t.dim).child(parentOf(this.rel(p))))
+                .when(i === this.at, (el) => el.child(actions(p, i)));
             })),
       )
-      .child(div().text_size(11).text_color(t.dim).child(`${this.dirs === null ? "Scanning… · " : ""}Enter open · ctrl+o add root · ctrl+r toggle root · ctrl+p toggle pin · Esc`));
+      .child(div().text_size(11).text_color(t.dim).child(`${this.dirs === null ? "Scanning… · " : ""}↑↓ move · Enter open · Esc close`));
   }
 }
