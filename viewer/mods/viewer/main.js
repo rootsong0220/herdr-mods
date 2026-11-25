@@ -206,7 +206,8 @@ export default class Viewer extends View {
     const req = shared("viewer.show");
     if (req && req.n !== this.seen) {
       this.seen = req.n;
-      if (req.tab === this.tab) this.open(req.target, req.kind, req.line, cx);
+      // open() notifies, which Herdr forbids during render. Deferred via a timer: from inside cx.spawn, the helper never started (stuck on Loading).
+      if (req.tab === this.tab) cx.timer.after(1, (cx) => this.open(req.target, req.kind, req.line, cx));
     }
     const t = theme();
     const button = (id, label, onClick) => div().id(id).h(24).px(8).flex().items_center().rounded(6).cursor_pointer()
