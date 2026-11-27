@@ -6,7 +6,7 @@ Everything in this repo at once: Herdr's main window with a CPU / memory meter i
 
 ## What you see
 
-- Herdr's shipped `main` window (0.1.17), unchanged except for the status bar.
+- Herdr's shipped `main` window (0.1.17), unchanged except for the status bar and one sidebar row.
 - **Status bar** (28px row), from left to right:
   - The shipped `workspace-status`, taking the remaining width.
   - The CPU / MEM meter, 300px wide ([`sysmon-status`](../sysmon-status/RECIPE.md)).
@@ -18,7 +18,7 @@ Everything in this repo at once: Herdr's main window with a CPU / memory meter i
   - Projects: switch spaces or open a project folder ([`projects`](../projects/RECIPE.md)).
 - **Viewer:** a pane beside the terminal after a Ctrl/Cmd-click on a path or a web address ([`viewer`](../viewer/RECIPE.md)).
 - **Update notice:** a toast when a newer version tag is out ([`updates`](../updates/RECIPE.md)).
-- **Installed mods:** a popup listing them, whose buttons start your agent to update or remove one ([`installed`](../installed/RECIPE.md)).
+- **Installed mods:** a `Mods` row at the bottom of the sidebar, above `Settings`, reading `N behind` when mods are out of date. It opens a list of them whose buttons start your agent to update or remove one ([`installed`](../installed/RECIPE.md)). `alt-m` opens the list too.
 
 ## How it behaves
 
@@ -34,7 +34,7 @@ Each piece behaves as its own recipe says. Together:
 
 ## Built from
 
-- **`layouts/all-in-one.json`:** Herdr 0.1.17's shipped `main.json` with two changes.
+- **`layouts/all-in-one.json`:** Herdr 0.1.17's shipped `main.json` with three changes.
   1. The `status` block (`{ "mod": "workspace-status" }`, 28px) became a row. Its first child is the shipped block, given the id `status-base`; the row has no `divider`.
      ```json
      { "id": "status", "type": "row", "size": { "px": 28 }, "children": [
@@ -44,6 +44,7 @@ Each piece behaves as its own recipe says. Together:
          { "id": "status-updates", "type": "block", "size": { "px": 0 }, "content": { "mod": "updates" } } ] }
      ```
   2. The root has `"link_handlers": ["viewer"]`.
+  3. In the `sidebar` column, right before `sidebar-footer`: `{ "id": "sidebar-mods", "type": "block", "size": { "px": 33 }, "content": { "mod": "installed" } }`.
 - **Mods**, each copied from its folder in this repo (not from this folder):
   - `sysmon-status/mods/sysmon`
   - `inbox/mods/inbox`
@@ -84,8 +85,8 @@ This folder has no `mods/`, so the usual steps in `AGENTS.md` (in the Herdr home
 ## Watch out
 
 - Herdr only lets link handlers run on a personal layout. This file is one once copied into `layouts/`, so the viewer works without cloning `main`.
-- The layout is a copy of 0.1.17's `main`. Later Herdr updates to `main` don't reach it. To pick them up, clone the new `main` and apply the two changes above again.
-- The `recent` and `updates` blocks must stay in the layout, or nothing records visits and nothing checks for updates.
+- The layout is a copy of 0.1.17's `main`. Later Herdr updates to `main` don't reach it. To pick them up, clone the new `main` and apply the three changes above again.
+- The `recent` and `updates` blocks must stay in the layout (and `sidebar-mods`, for the `Mods` row), or nothing records visits and nothing checks for updates.
 - Installing only some of the mods is fine. Drop the blocks and keys of the ones left out, and remove `link_handlers` if `viewer` is left out.
 - Tested on Linux with Herdr 0.1.17. macOS and Windows are untested.
 

@@ -67,6 +67,16 @@
           ]
         },
         {
+          "id": "sidebar-mods",
+          "type": "block",
+          "size": {
+            "px": 33
+          },
+          "content": {
+            "mod": "installed"
+          }
+        },
+        {
           "id": "sidebar-footer",
           "type": "block",
           "size": {

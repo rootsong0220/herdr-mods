@@ -1,17 +1,26 @@
 // The mods installed from herdr-mods: every mod folder with a .herdr-mods-version (or the older
-// .herdr-mods-commit), its version, and the layouts and keys that use it. The selected row's buttons
-// start an agent in a new tab to update (ctrl+u) or remove (ctrl+d) that one mod. Both need the
-// judgment the README's prompts describe (renamed copies, edited files, layouts), so this only asks.
+// .herdr-mods-commit), its version, and the layouts and keys that use it. Two roles in one mod:
+// - As a layout block (the sidebar, above the shipped footer): a "Mods" row like Settings, with
+//   "N behind" when mods are behind; it opens the popup.
+// - As the popup (mod.open:installed): the list. The selected row's buttons start an agent in a new tab
+//   to update (ctrl+u) or remove (ctrl+d) that one mod. Both need the judgment the README's prompts
+//   describe (renamed copies, edited files, layouts), so this only asks.
 
-import { View, div } from "gpui-kit";
+import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
-import { appHome, closeOverlay, exec, layouts, props, readTextFile, run, shared, theme } from "herdr";
+import { appHome, checking, closeOverlay, exec, layout, layouts, props, readTextFile, run, shared, theme } from "herdr";
 import { readdir } from "fs/promises";
 import { newer } from "./versions.js";
 
 const REPO = "https://github.com/rootsong0220/herdr-mods";
+const SELF = "installed";
+const RESCAN_MS = 5 * 60 * 1000;
 const ROW = 44;
 const DEFAULT_AGENT = ["claude"];
+// installed.json is Herdr's own bookkeeping of its shipped mods; never write there.
+const CONFIG = "herdr-mods.json";
+// Mods this repo provides. A folder with one of these names but no version file was installed by hand.
+const KNOWN = new Set(["inbox", "recent", "projects", "viewer", "sysmon", "updates", "installed"]);
 
 const read = (path) => readTextFile(path).catch(() => null);
 const json = (text) => { try { return JSON.parse(text); } catch { return null; } };
@@ -52,6 +61,35 @@ function keysFor(keys, name) {
   return found;
 }
 
+async function scan() {
+  const home = appHome();
+  const cfg = json(await read(`${home}/${CONFIG}`));
+  const agent = Array.isArray(cfg?.agent) && cfg.agent.length && cfg.agent.every((a) => typeof a === "string") ? cfg.agent : DEFAULT_AGENT;
+  const keys = json(await read(`${home}/keys.json`));
+  const used = new Map();
+  for (const l of layouts()) {
+    for (const mod of modsInLayout(json(await read(`${home}/layouts/${l}.json`)))) used.set(mod, [...(used.get(mod) ?? []), l]);
+  }
+  const mods = [];
+  for (const name of (await modNames(`${home}/mods`)).sort()) {
+    const tag = (await read(`${home}/mods/${name}/.herdr-mods-version`))?.trim();
+    const commit = tag ? null : (await read(`${home}/mods/${name}/.herdr-mods-commit`))?.trim();
+    if (!tag && !commit && !KNOWN.has(name)) continue;
+    const version = tag || (commit ? `commit ${commit.slice(0, 7)}` : "version unknown");
+    mods.push({ name, version, tagged: !!tag, layouts: used.get(name) ?? [], keys: keysFor(keys, name) });
+  }
+  return { agent, mods };
+}
+
+// As the shipped sidebar decides it: a rail when the sidebar is under 160px.
+function narrow(node = layout()) {
+  if (node?.id === "sidebar") return (node.size?.px ?? Infinity) < 160;
+  for (const c of node?.children ?? []) { const r = narrow(c); if (r !== undefined) return r; }
+  return undefined;
+}
+
+const isBehind = (m, latest) => !m.tagged || (!!latest && newer(latest, m.version));
+
 const updatePrompt = (m) =>
   `Update only the "${m.name}" mod in my Herdr home (${appHome()}) to the latest version of ${REPO} (installed: ${m.version}). ` +
   `Get the repo and follow the update prompt in its README.md ("Updating"), applied to this one mod: its files, ` +
@@ -67,32 +105,38 @@ const removePrompt = (m) =>
 
 export default class Installed extends View {
   init(_props, cx) {
+    this.popup = Boolean(props()?.overlay);
     this.mods = null;
     this.at = 0;
     this.agent = DEFAULT_AGENT;
+    const load = (cx) => cx.spawn(async (cx) => { Object.assign(this, await scan()); cx.notify(); });
+    load(cx);
+    if (!this.popup) {
+      // Spawn from the timer's own cx: a spawn nested inside another task never runs.
+      if (!checking()) cx.timer.every(RESCAN_MS, (cx) => load(cx));
+      return;
+    }
     this.scroll = ScrollHandle.new();
     this.handle = cx.focus_handle();
     this.handle.focus();
     cx.timer.after(600, () => this.handle.focus());
-    cx.spawn(async (cx) => {
-      const home = appHome();
-      const cfg = json(await read(`${home}/installed.json`));
-      if (Array.isArray(cfg?.agent) && cfg.agent.length && cfg.agent.every((a) => typeof a === "string")) this.agent = cfg.agent;
-      const keys = json(await read(`${home}/keys.json`));
-      const used = new Map();
-      for (const l of layouts()) {
-        for (const mod of modsInLayout(json(await read(`${home}/layouts/${l}.json`)))) used.set(mod, [...(used.get(mod) ?? []), l]);
-      }
-      const mods = [];
-      for (const name of (await modNames(`${home}/mods`)).sort()) {
-        const tag = (await read(`${home}/mods/${name}/.herdr-mods-version`))?.trim();
-        const commit = tag ? null : (await read(`${home}/mods/${name}/.herdr-mods-commit`))?.trim();
-        if (!tag && !commit) continue;
-        mods.push({ name, version: tag || `commit ${commit.slice(0, 7)}`, tagged: !!tag, layouts: used.get(name) ?? [], keys: keysFor(keys, name) });
-      }
-      this.mods = mods;
-      cx.notify();
-    });
+  }
+
+  // Styled like the shipped sidebar footer's rows (Settings, Add machine), so it reads as one of them.
+  bar(t, latest) {
+    const n = (this.mods ?? []).filter((m) => isBehind(m, latest)).length;
+    const rail = narrow() === true;
+    const dot = div().size(6).rounded_full().bg(t.accent);
+    const row = h_flex().id("installed-bar").h(28).px(8).gap(9).items_center().rounded(8).cursor_pointer()
+      .text_color(t.muted).hover((s) => s.bg(t.hover).text_color(t.foreground))
+      .on_click(() => run("mod.open", { name: SELF }))
+      .child(svg("mods/workspace-chrome/layers.svg").size(14))
+      .when(rail, (el) => el.relative().w(32).px(0).justify_center().when(n > 0, (el) => el.child(dot.absolute().top(5).right(6))))
+      .when(!rail, (el) => el.child(div().flex_1().child("Mods"))
+        .when(n > 0, (el) => el.child(div().text_size(11).text_color(t.accent).child(`${n} behind`))));
+    return v_flex().size_full().bg(t.chrome).border_t(1).border_color(t.border).px(8).pt(4).text_size(13)
+      .when(rail, (el) => el.px(0).items_center())
+      .child(row);
   }
 
   ask(m, prompt, label) {
@@ -102,10 +146,11 @@ export default class Installed extends View {
 
   render() {
     const t = theme();
+    const latest = shared("updates.state")?.latest ?? null;
+    if (!this.popup) return this.bar(t, latest);
     const mods = this.mods ?? [];
     this.at = Math.min(this.at, Math.max(0, mods.length - 1));
-    const latest = shared("updates.state")?.latest ?? null;
-    const behind = (m) => !m.tagged || (latest && newer(latest, m.version));
+    const behind = (m) => isBehind(m, latest);
     const button = (id, label, key, act) => h_flex().id(id).flex_none().h(24).px(8).gap(6).items_center().rounded(6)
       .border_1().border_color(t.border).bg(t.background).text_size(11.5).text_color(t.foreground).cursor_pointer()
       .hover((s) => s.bg(t.raised))
@@ -152,7 +197,7 @@ export default class Installed extends View {
                   .child(h_flex().gap(8).items_center()
                     .child(div().font_semibold().text_color(t.foreground).child(m.name))
                     .child(div().text_size(11).text_color(t.dim).child(m.version))
-                    .when(behind(m), (el) => el.child(div().text_size(11).text_color(t.accent).child(m.tagged ? `→ ${latest}` : "older install"))))
+                    .when(behind(m), (el) => el.child(div().text_size(11).text_color(t.accent).child(m.tagged ? `→ ${latest}` : "not tracked"))))
                   .child(div().truncate().text_size(11).text_color(t.dim).child(uses || "not used by any layout or key")))
                 .when(i === this.at, (el) => el.child(h_flex().gap(6).flex_none()
                   .child(button(`in-up-${i}`, "Update", "Ctrl+U", () => update(m)))
