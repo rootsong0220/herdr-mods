@@ -2,6 +2,7 @@
   "global": {
     "alt-1": "mod.open:projects",
     "alt-2": "mod.open:inbox",
+    "alt-m": "mod.open:installed",
     "alt-h": "pane.go:left",
     "alt-j": "pane.go:down",
     "alt-k": "pane.go:up",

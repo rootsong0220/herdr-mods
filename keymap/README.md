@@ -9,7 +9,7 @@ The author's Herdr `keys.json`: vim-style pane moves on `alt-h/j/k/l`, a tmux-st
 Give your agent this folder's URL, for example: "merge https://github.com/rootsong0220/herdr-mods/tree/main/keymap into my keys". It should:
 
 1. Merge `keys.json` into the `keys.json` in your Herdr home (`~/.config/herdr-app`, or `$HERDR_APP_HOME`), following `AGENTS.md`. Add the new keys, and ask before replacing a key you already use. The table below lists the keys that replace one of Herdr's defaults.
-2. Point `mod.open:<name>` at the installed names if `projects`, `inbox` or `recent` were installed under other names. If they aren't installed, those keys do nothing.
+2. Point `mod.open:<name>` at the installed names if `projects`, `inbox`, `recent` or `installed` were installed under other names. If they aren't installed, those keys do nothing.
 3. Leave out any key you decline.
 
 Once you edit `keys.json`, Herdr stops updating it with new default shortcuts (see `AGENTS.md`).
@@ -36,6 +36,7 @@ Once you edit `keys.json`, Herdr stops updating it with new default shortcuts (s
 | `ctrl-shift-j` | `mod.open:projects` |
 | `ctrl-shift-r` | `pane.split:right` |
 | `ctrl-e` | `mod.open:recent` (needs [`recent`](../recent/RECIPE.md)) |
+| `alt-m` | `mod.open:installed` (needs [`installed`](../installed/RECIPE.md)) |
 | `ctrl-n` | `tab.new` |
 | `ctrl-b %` / `ctrl-b shift-5` | `pane.split:right` |
 | `ctrl-b "` / `ctrl-b shift-'` | `pane.split:down` |

@@ -16,7 +16,7 @@ gallery 항목이 아닙니다. 내 파일을 덮어쓰지 말고 병합해서 �
 agent에게 이 폴더 주소를 주세요. 예: "https://github.com/rootsong0220/herdr-mods/tree/main/keymap 을 내 키 설정에 병합해줘". agent는 다음을 해야 합니다.
 
 1. `AGENTS.md`의 절차대로, 이 `keys.json`을 Herdr 홈(`~/.config/herdr-app`, 또는 `$HERDR_APP_HOME`)의 `keys.json`에 병합합니다. 새 키는 추가하고, 이미 쓰는 키를 바꿀 때는 먼저 묻습니다. Herdr 기본값을 바꾸는 키는 아래 표에 있습니다.
-2. `projects`, `inbox`, `recent`를 다른 이름으로 설치했다면 `mod.open:<이름>`을 그 이름으로 고칩니다. 설치하지 않았다면 해당 키는 아무 동작도 하지 않습니다.
+2. `projects`, `inbox`, `recent`, `installed`를 다른 이름으로 설치했다면 `mod.open:<이름>`을 그 이름으로 고칩니다. 설치하지 않았다면 해당 키는 아무 동작도 하지 않습니다.
 3. 거절한 키는 넣지 않습니다.
 
 `keys.json`을 한 번 고치면, 그 뒤 Herdr 업데이트의 새 기본 단축키는 자동으로 들어오지 않습니다(`AGENTS.md` 참고).
@@ -43,6 +43,7 @@ agent에게 이 폴더 주소를 주세요. 예: "https://github.com/rootsong022
 | `ctrl-shift-j` | `mod.open:projects` |
 | `ctrl-shift-r` | `pane.split:right` |
 | `ctrl-e` | `mod.open:recent` ([`recent`](../recent/RECIPE.md) 필요) |
+| `alt-m` | `mod.open:installed` ([`installed`](../installed/RECIPE.md) 필요) |
 | `ctrl-n` | `tab.new` |
 | `ctrl-b %` / `ctrl-b shift-5` | `pane.split:right` |
 | `ctrl-b "` / `ctrl-b shift-'` | `pane.split:down` |
