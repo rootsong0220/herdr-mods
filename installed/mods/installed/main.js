@@ -1,0 +1,165 @@
+// The mods installed from herdr-mods: every mod folder with a .herdr-mods-version (or the older
+// .herdr-mods-commit), its version, and the layouts and keys that use it. The selected row's buttons
+// start an agent in a new tab to update (ctrl+u) or remove (ctrl+d) that one mod. Both need the
+// judgment the README's prompts describe (renamed copies, edited files, layouts), so this only asks.
+
+import { View, div } from "gpui-kit";
+import { v_flex, h_flex, ScrollHandle } from "gpui-base";
+import { appHome, closeOverlay, exec, layouts, props, readTextFile, run, shared, theme } from "herdr";
+import { readdir } from "fs/promises";
+import { newer } from "./versions.js";
+
+const REPO = "https://github.com/rootsong0220/herdr-mods";
+const ROW = 44;
+const DEFAULT_AGENT = ["claude"];
+
+const read = (path) => readTextFile(path).catch(() => null);
+const json = (text) => { try { return JSON.parse(text); } catch { return null; } };
+
+async function modNames(dir) {
+  try {
+    return (await readdir(dir, { withFileTypes: true })).filter((e) => e.isDirectory()).map((e) => e.name);
+  } catch {
+    // fs reads only inside the home folder, and Herdr's home can be outside it on Windows.
+    const win = /^[A-Za-z]:/.test(dir);
+    const literal = "'" + dir.replace(/['‘’‚‛]/g, "$&$&") + "'";
+    const r = await (win
+      ? exec("powershell", ["-NoProfile", "-Command", "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); " +
+        `Get-ChildItem -LiteralPath ${literal} -Directory -Force -ErrorAction Stop | ForEach-Object { $_.Name }`], { timeout: 10000 })
+      : exec("find", [dir, "-mindepth", "1", "-maxdepth", "1", "-type", "d"], { timeout: 10000 })).catch(() => null);
+    return r && r.code === 0 ? r.stdout.split(/\r?\n/).filter(Boolean).map((p) => p.split(/[\\/]/).pop()) : [];
+  }
+}
+
+// Mod names a layout uses: blocks' content.mod, and link_handlers.
+function modsInLayout(node, out = new Set()) {
+  if (!node || typeof node !== "object") return out;
+  if (typeof node.content?.mod === "string") out.add(node.content.mod);
+  for (const h of node.link_handlers ?? []) out.add(h);
+  for (const c of node.children ?? []) modsInLayout(c, out);
+  return out;
+}
+
+// Keys bound to a mod: "mod.open:<name>" or one of its own "<name>:<command>"s, in any section.
+function keysFor(keys, name) {
+  const found = [];
+  for (const section of Object.values(keys ?? {})) {
+    if (!section || typeof section !== "object") continue;
+    for (const [key, action] of Object.entries(section)) {
+      if (action === `mod.open:${name}` || (typeof action === "string" && action.startsWith(`${name}:`))) found.push(key);
+    }
+  }
+  return found;
+}
+
+const updatePrompt = (m) =>
+  `Update only the "${m.name}" mod in my Herdr home (${appHome()}) to the latest version of ${REPO} (installed: ${m.version}). ` +
+  `Get the repo and follow the update prompt in its README.md ("Updating"), applied to this one mod: its files, ` +
+  `the renames its RECIPE.md lists if it was installed under another name, its keys, and the layout blocks it needs. Leave the other mods as they are.`;
+
+const removePrompt = (m) =>
+  `Remove the "${m.name}" mod from my Herdr home (${appHome()}). It was installed from ${REPO} (version ${m.version}). ` +
+  `Read its RECIPE.md in that repo to find everything it added, then show me the list: the mods/${m.name} folder; ` +
+  `layout blocks with "mod": "${m.name}" and "${m.name}" in link_handlers (${m.layouts.join(", ") || "no layout uses it"}); ` +
+  `keys.json bindings to it (${m.keys.join(", ") || "none found"}); and its data and shared keys named in the RECIPE. ` +
+  `Ask me before deleting anything, and back up keys.json and each layout you change as <file>.bak-<date> first. ` +
+  `Don't touch other mods. When done, tell me how to install it again.`;
+
+export default class Installed extends View {
+  init(_props, cx) {
+    this.mods = null;
+    this.at = 0;
+    this.agent = DEFAULT_AGENT;
+    this.scroll = ScrollHandle.new();
+    this.handle = cx.focus_handle();
+    this.handle.focus();
+    cx.timer.after(600, () => this.handle.focus());
+    cx.spawn(async (cx) => {
+      const home = appHome();
+      const cfg = json(await read(`${home}/installed.json`));
+      if (Array.isArray(cfg?.agent) && cfg.agent.length && cfg.agent.every((a) => typeof a === "string")) this.agent = cfg.agent;
+      const keys = json(await read(`${home}/keys.json`));
+      const used = new Map();
+      for (const l of layouts()) {
+        for (const mod of modsInLayout(json(await read(`${home}/layouts/${l}.json`)))) used.set(mod, [...(used.get(mod) ?? []), l]);
+      }
+      const mods = [];
+      for (const name of (await modNames(`${home}/mods`)).sort()) {
+        const tag = (await read(`${home}/mods/${name}/.herdr-mods-version`))?.trim();
+        const commit = tag ? null : (await read(`${home}/mods/${name}/.herdr-mods-commit`))?.trim();
+        if (!tag && !commit) continue;
+        mods.push({ name, version: tag || `commit ${commit.slice(0, 7)}`, tagged: !!tag, layouts: used.get(name) ?? [], keys: keysFor(keys, name) });
+      }
+      this.mods = mods;
+      cx.notify();
+    });
+  }
+
+  ask(m, prompt, label) {
+    closeOverlay(props().overlay);
+    if (m) run("terminal.open", { argv: [...this.agent, prompt(m)], folder: appHome(), place: "tab", name: `${label} ${m.name}` });
+  }
+
+  render() {
+    const t = theme();
+    const mods = this.mods ?? [];
+    this.at = Math.min(this.at, Math.max(0, mods.length - 1));
+    const latest = shared("updates.state")?.latest ?? null;
+    const behind = (m) => !m.tagged || (latest && newer(latest, m.version));
+    const button = (id, label, key, act) => h_flex().id(id).flex_none().h(24).px(8).gap(6).items_center().rounded(6)
+      .border_1().border_color(t.border).bg(t.background).text_size(11.5).text_color(t.foreground).cursor_pointer()
+      .hover((s) => s.bg(t.raised))
+      .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
+      .on_click((_e, cx) => { cx.stop_propagation(); act(); })
+      .child(label).child(div().text_size(10.5).text_color(t.dim).child(key));
+    const update = (m) => this.ask(m, updatePrompt, "update");
+    const remove = (m) => this.ask(m, removePrompt, "remove");
+    return v_flex()
+      .id("installed")
+      .track_focus(this.handle)
+      .w_full()
+      .min_h(0)
+      .p(18)
+      .gap(10)
+      .bg(t.popover)
+      .text_size(13)
+      .on_key_down((e, cx) => {
+        if (e.key === "escape") return closeOverlay(props().overlay);
+        if (e.modifiers.control && e.key === "u") update(mods[this.at]);
+        else if (e.modifiers.control && e.key === "d") remove(mods[this.at]);
+        else if (mods.length && (e.key === "down" || e.key === "up")) {
+          this.at = (this.at + (e.key === "down" ? 1 : mods.length - 1)) % mods.length;
+          this.scroll.scroll_to_item(this.at);
+        } else return;
+        cx.stop_propagation();
+        cx.notify();
+      })
+      .child(h_flex().items_center().gap(10)
+        .child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("Installed mods"))
+        .child(div().text_size(11.5).text_color(t.dim).child(latest ? `latest ${latest}` : "latest unknown (needs the updates mod)")))
+      .child(
+        !mods.length
+          ? div().h(30).text_color(t.dim).child(this.mods === null ? "Scanning…" : "No mods from herdr-mods found")
+          // Popups size to content: the list needs a definite height or it collapses to 0.
+          : v_flex().id("in-list").h(Math.min(480, mods.length * ROW)).overflow_y_scrollbar().track_scroll(this.scroll).children(
+            mods.map((m, i) => {
+              const uses = [m.layouts.length ? `layout ${m.layouts.join(", ")}` : "", m.keys.length ? `keys ${m.keys.join(", ")}` : ""].filter(Boolean).join(" · ");
+              return h_flex().id(`in-${i}`).flex_none().h(ROW).px(10).gap(10).items_center().rounded(7).cursor_pointer()
+                .when(i === this.at, (el) => el.bg(t.hover))
+                .hover((s) => s.bg(t.hover))
+                .on_click((_e, cx) => { this.at = i; cx.notify(); })
+                .child(v_flex().flex_1().min_w(0).gap(2)
+                  .child(h_flex().gap(8).items_center()
+                    .child(div().font_semibold().text_color(t.foreground).child(m.name))
+                    .child(div().text_size(11).text_color(t.dim).child(m.version))
+                    .when(behind(m), (el) => el.child(div().text_size(11).text_color(t.accent).child(m.tagged ? `→ ${latest}` : "older install"))))
+                  .child(div().truncate().text_size(11).text_color(t.dim).child(uses || "not used by any layout or key")))
+                .when(i === this.at, (el) => el.child(h_flex().gap(6).flex_none()
+                  .child(button(`in-up-${i}`, "Update", "Ctrl+U", () => update(m)))
+                  .child(button(`in-rm-${i}`, "Remove", "Ctrl+D", () => remove(m)))));
+            }),
+          ),
+      )
+      .child(div().text_size(11).text_color(t.dim).child("↑↓ move · Update and Remove start your agent in a new tab · Esc close"));
+  }
+}

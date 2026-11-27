@@ -1,6 +1,6 @@
 # All-in-one
 
-Everything in this repo at once: Herdr's main window with a CPU / memory meter in the status bar, the Inbox, Recent and Projects popups on keys, the Viewer for Ctrl/Cmd-clicked paths and web addresses, and a toast when this repo has a new version. Optionally the author's keymap too. This folder holds only the layout. The mods come from the other folders of this repo, so there is one copy of each.
+Everything in this repo at once: Herdr's main window with a CPU / memory meter in the status bar, the Inbox, Recent and Projects popups on keys, the Viewer for Ctrl/Cmd-clicked paths and web addresses, a toast when this repo has a new version, and a list of the installed mods to update or remove them one by one. Optionally the author's keymap too. This folder holds only the layout. The mods come from the other folders of this repo, so there is one copy of each.
 
 ![All-in-one](preview.png)
 
@@ -18,6 +18,7 @@ Everything in this repo at once: Herdr's main window with a CPU / memory meter i
   - Projects: switch spaces or open a project folder ([`projects`](../projects/RECIPE.md)).
 - **Viewer:** a pane beside the terminal after a Ctrl/Cmd-click on a path or a web address ([`viewer`](../viewer/RECIPE.md)).
 - **Update notice:** a toast when a newer version tag is out ([`updates`](../updates/RECIPE.md)).
+- **Installed mods:** a popup listing them, whose buttons start your agent to update or remove one ([`installed`](../installed/RECIPE.md)).
 
 ## How it behaves
 
@@ -27,6 +28,7 @@ Each piece behaves as its own recipe says. Together:
 - Recent records every tab you look at while this layout is shown. Switching to a layout without the 0px block stops recording.
 - The layout's root has `"link_handlers": ["viewer"]`, so Ctrl/Cmd-clicks in terminals go to the viewer first.
 - **Keys**, whichever set the person picks at install:
+  - Both sets also get `alt-m` for the installed-mods list.
   - Suggested by each mod: `alt-2` Inbox, `ctrl-e` Recent, `alt-1` and `ctrl-shift-j` Projects. `alt-1` and `alt-2` replace Herdr's default `space.select:1`/`2`, and `ctrl-e` takes end-of-line from the shell (`alt-e` is the free alternative).
   - The author's [keymap](../keymap/README.md): `alt-2` Inbox, `ctrl-e` Recent, `alt-1` and `ctrl-shift-j` Projects, and pane, tab and `ctrl-b` keys.
 
@@ -49,7 +51,8 @@ Each piece behaves as its own recipe says. Together:
   - `projects/mods/projects`
   - `viewer/mods/viewer`
   - `updates/mods/updates`
-- **Keys:** either merge `inbox/keys.json`, `recent/keys.json` and `projects/keys.json`, or merge `keymap/keys.json` instead.
+  - `installed/mods/installed`
+- **Keys:** either merge `inbox/keys.json`, `recent/keys.json` and `projects/keys.json`, or merge `keymap/keys.json` instead. Merge `installed/keys.json` with either.
 - It uses no shipped mod beyond `main`'s own. It has no art of its own.
 
 ### Installing it (read this first)
@@ -61,18 +64,19 @@ This folder has no `mods/`, so the usual steps in `AGENTS.md` (in the Herdr home
    - For the viewer: Node 22+, `git`, and Chrome, Chromium or Edge (see its recipe).
    - For updates: `git`. Without it, the notice stays silent.
    - On macOS or Windows (check with `uname` or the OS you run on), don't ask: leave out the `sysmon` mod and remove the `status-sysmon` block from the layout's status row. The meter would only be an empty 300px strip there. Tell the person you left it out.
-2. **Read every file** of this folder and of the six mod folders above. Tell the person what runs programs, reads files outside its folder or reaches the network:
+2. **Read every file** of this folder and of the seven mod folders above. Tell the person what runs programs, reads files outside its folder or reaches the network:
    - `projects` reads and writes `projects.json` in the Herdr home (shared with any other copy of it), and runs `find` or PowerShell only when it can't list a folder itself.
    - `viewer` runs `node`, `git`, a headless browser and the system opener, and loads the web pages you click.
    - `sysmon` reads `/proc` (Linux only).
+   - `installed` reads the mods' version files, the layouts and `keys.json`; its buttons start the person's agent (`claude`) in a new tab.
    - `updates` runs `git ls-remote` against github.com once a day, and reads its own `.herdr-mods-version`.
    - `inbox` and `recent` use Herdr's data and the shipped `mods/workspace-chrome/spinner.svg`; `recent` writes its visit list to Herdr's shared state.
-3. **Copy** `layouts/all-in-one.json` and the six mod folders into the Herdr home. Never overwrite.
+3. **Copy** `layouts/all-in-one.json` and the seven mod folders into the Herdr home. Never overwrite.
    - When a name is taken, rename the new copy and update `"mod"` in the layout, `link_handlers`, and the renames each mod's recipe lists.
    - `recent` has its shared key `recent.tabs`.
    - `viewer` has `mods/viewer/`, `data/viewer/`, `viewer.show`, `viewer.clicks`, and in `link.js` both `mod: "viewer"` and the `p.mod === "viewer"` test.
    - `updates` has `SELF` and the shared key `updates.state` in `main.js`.
-4. **Keys.** Ask which set the person wants: the three suggested keys, or the author's keymap. Merge it, ask before replacing any key already in use, and point `mod.open:` at the installed names.
+4. **Keys.** Ask which set the person wants: the three suggested keys, or the author's keymap. Add `alt-m` for `installed` to either. Merge it, ask before replacing any key already in use, and point `mod.open:` at the installed names.
    - If mods were renamed because older copies exist, the existing keys still open the old copies. Ask whether to move those keys to the new copies, or which new keys to use.
    - Recent's popup and its tracker must be the same copy: a renamed tracker writes its own history, so a key that opens the old popup won't show it.
 5. **Check and switch.** `herdr-app check <Herdr home>/mods/<installed name>` for each mod, then `layout.switch {"name":"all-in-one"}`. The person's own layout stays; switching back is `layout.switch` with its name (the author's keymap moves `ctrl-shift-l` away from layout switching).
@@ -87,8 +91,8 @@ This folder has no `mods/`, so the usual steps in `AGENTS.md` (in the Herdr home
 
 ## Done when
 
-- `herdr-app check` passes for `inbox`, `recent`, `projects`, `viewer` and `updates`, and on Linux `sysmon` (or their installed names).
+- `herdr-app check` passes for `inbox`, `recent`, `projects`, `viewer`, `updates` and `installed`, and on Linux `sysmon` (or their installed names).
 - On Linux, after `layout.switch {"name":"all-in-one"}`, the status bar shows `CPU` and `MEM` meters on the right. On macOS and Windows, the layout has no `status-sysmon` block and no `sysmon` mod was copied.
-- The chosen Inbox, Recent and Projects keys open the installed copies' popups.
+- The chosen Inbox, Recent and Projects keys, and `alt-m`, open the installed copies' popups.
 - Visit tab A, then tab B, then open Recent: B is the first row and the cursor is on A.
 - Ctrl/Cmd-clicking a file path in a terminal opens it in a viewer pane to the right.
