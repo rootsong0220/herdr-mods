@@ -22,10 +22,12 @@ A `Mods` row in the sidebar and a popup listing the mods installed from this rep
 ## How it behaves
 
 - **Which mods:** every folder in `<Herdr home>/mods/` with a `.herdr-mods-version` file (written by the README's install and update prompts), or the older `.herdr-mods-commit`. Copies installed under another name are found too. A folder named like one of this repo's mods (`inbox`, `recent`, `projects`, `viewer`, `sysmon`, `updates`, `installed`) is listed even without either file, as `version unknown`: it was copied by hand. Herdr's own mods (the keys of Herdr's `installed.json`) are left out. Every other mod folder is listed after them under an `Other mods · not from herdr-mods, so no version or buttons` heading (28px, 11px semibold `dim`, 1px `border` top line): name and uses only, no buttons, never counted as behind. If Herdr's `installed.json` can't be read, other mods are not listed, rather than listing every shipped mod as other.
+- **Not installed:** between the two, under a `Not installed · from herdr-mods; Install starts your agent` heading, this repo's mods (from `CATALOG` in `main.js`) that have no folder of that name. Each row shows the name and a one-line description. A mod limited to one platform (`sysmon`: Linux) is offered only there; outside a window (`herdr-app check`) it isn't offered.
 - **What uses a mod:** for every layout in `layouts()`, the blocks with `content.mod` equal to its name, its name in `link_handlers`, and the root's `toast` and `terminal_menu`. For `keys.json`, any binding to `mod.open:<name>` or to one of its own `<name>:<command>`s.
 - **Latest version:** the `latest` that the [`updates`](../updates/RECIPE.md) mod keeps in the shared value `updates.state`. It is at most a day old. Without `updates`, nothing is marked as behind except commit-only installs.
 - **Update / Remove** (button, or ctrl+u / ctrl+d on the selected row) close the popup and run `terminal.open {argv: [...agent, prompt], folder: <Herdr home>, place: "tab", name: "update <mod>"}`:
   - **Update:** update only this mod to the repo's latest version, following the README's update prompt for it: its files, the renames from its recipe if it was renamed, its keys and the layout blocks it needs.
+  - **Install** (the only button on a `Not installed` row, ctrl+i): install that mod following the README's install prompt and the folder's recipe: requirements first, no overwriting, the layout blocks it needs in the layout in use, ask before replacing a key, and write `.herdr-mods-version`.
   - **Remove:** read the mod's recipe, list everything it added (its folder, layout blocks and `link_handlers` entries, keys, data and shared keys), ask before deleting, and back up `keys.json` and each changed layout first.
   - The agent asks its questions in that tab. Nothing is changed before it does.
 - **The agent:** `["claude"]`. To use another one, write `<Herdr home>/herdr-mods.json`: `{ "agent": ["codex"] }`. The prompt is passed as the last argument. Not `installed.json`: that file is Herdr's own record of its shipped mods.
@@ -53,6 +55,7 @@ A `Mods` row in the sidebar and a popup listing the mods installed from this rep
 
 - **Renamed on install:** change `SELF` in `main.js` (the row opens `mod.open` with it), the block's `mod` and the key.
 - **Forks:** change `REPO` in `main.js`.
+- **A new mod in this repo** must be added to `CATALOG` in `main.js` (name, folder, description, platform), or it is never offered. `scripts/release.sh` refuses to tag when a mod folder is missing from it.
 - `ctrl-m` would be a poor key for it: terminals send ctrl+m as Enter. `alt-m` is free in Herdr's defaults, but Claude Code uses Alt+M as a second key for switching permission modes (Shift+Tab still works).
 - The agent must be on PATH for the terminal Herdr starts. If it isn't, the new tab shows the error.
 - Updating one mod at a time can leave mods at different versions. `updates` compares only its own `.herdr-mods-version`, so it stays quiet once it is current even if others are behind; this list shows each one.

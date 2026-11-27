@@ -2,13 +2,14 @@
 // .herdr-mods-commit), its version, and the layouts and keys that use it. Two roles in one mod:
 // - As a layout block (the sidebar, above the shipped footer): a "Mods" row like Settings, with
 //   "N behind" when mods are behind; it opens the popup.
-// - As the popup (mod.open:installed): the list. The selected row's buttons start an agent in a new tab
-//   to update (ctrl+u) or remove (ctrl+d) that one mod. Both need the judgment the README's prompts
-//   describe (renamed copies, edited files, layouts), so this only asks.
+// - As the popup (mod.open:installed): the list, then this repo's mods that aren't installed, then other
+//   mods. The selected row's buttons start an agent in a new tab to update (ctrl+u), remove (ctrl+d) or
+//   install (ctrl+i) that one mod. All need the judgment the README's prompts describe (renamed copies,
+//   edited files, layouts, requirements), so this only asks.
 
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
-import { appHome, checking, closeOverlay, exec, layout, layouts, props, readTextFile, run, shared, theme } from "herdr";
+import { appHome, checking, closeOverlay, exec, layout, layouts, props, readTextFile, run, shared, theme, window } from "herdr";
 import { readdir } from "fs/promises";
 import { newer } from "./versions.js";
 
@@ -20,8 +21,19 @@ const HEAD = 28;
 const DEFAULT_AGENT = ["claude"];
 // installed.json is Herdr's own bookkeeping of its shipped mods; never write there.
 const CONFIG = "herdr-mods.json";
-// Mods this repo provides. A folder with one of these names but no version file was installed by hand.
-const KNOWN = new Set(["inbox", "recent", "projects", "viewer", "sysmon", "updates", "installed"]);
+// This repo's mods at this version: [mod name, repo folder, what it does, the only platform it runs on].
+// A folder with one of these names but no version file was installed by hand; a missing one is offered.
+// Add new mods here when releasing them.
+const CATALOG = [
+  ["inbox", "inbox", "Popup of every agent, the ones that need you first"],
+  ["recent", "recent", "Recently visited tabs; open it and Enter flips between the last two"],
+  ["projects", "projects", "Switch spaces and open project folders from one popup"],
+  ["viewer", "viewer", "Ctrl-click a path or a web address to see it in a pane beside the terminal"],
+  ["sysmon", "sysmon-status", "CPU and memory meter in the status bar", "linux"],
+  ["updates", "updates", "A toast when a new herdr-mods version is out"],
+  ["installed", "installed", "This list, and the Mods row in the sidebar"],
+];
+const KNOWN = new Set(CATALOG.map(([name]) => name));
 
 const read = (path) => readTextFile(path).catch(() => null);
 const json = (text) => { try { return JSON.parse(text); } catch { return null; } };
@@ -75,7 +87,8 @@ async function scan() {
   // Herdr's record of its shipped mods. Unreadable: list only this repo's, rather than every shipped one as "other".
   const shipped = json(await read(`${home}/installed.json`));
   const mods = [], others = [];
-  for (const name of (await modNames(`${home}/mods`)).sort()) {
+  const present = (await modNames(`${home}/mods`)).sort();
+  for (const name of present) {
     const tag = (await read(`${home}/mods/${name}/.herdr-mods-version`))?.trim();
     const commit = tag ? null : (await read(`${home}/mods/${name}/.herdr-mods-commit`))?.trim();
     const uses = { layouts: used.get(name) ?? [], keys: keysFor(keys, name) };
@@ -85,7 +98,11 @@ async function scan() {
       others.push({ name, version: "not from herdr-mods", other: true, ...uses });
     }
   }
-  return { agent, mods: [...mods, ...others] };
+  // window() is null outside a window (herdr-app check); then platform-only mods aren't offered.
+  const platform = window()?.platform ?? null;
+  const available = CATALOG.filter(([name, , , only]) => !present.includes(name) && (!only || only === platform))
+    .map(([name, folder, about]) => ({ name, folder, about, available: true, layouts: [], keys: [] }));
+  return { agent, mods: [...mods, ...available, ...others] };
 }
 
 // As the shipped sidebar decides it: a rail when the sidebar is under 160px.
@@ -95,7 +112,7 @@ function narrow(node = layout()) {
   return undefined;
 }
 
-const isBehind = (m, latest) => !m.other && (!m.tagged || (!!latest && newer(latest, m.version)));
+const isBehind = (m, latest) => !m.other && !m.available && (!m.tagged || (!!latest && newer(latest, m.version)));
 
 const updatePrompt = (m) =>
   `Update only the "${m.name}" mod in my Herdr home (${appHome()}) to the latest version of ${REPO} (installed: ${m.version}). ` +
@@ -109,6 +126,18 @@ const removePrompt = (m) =>
   `keys.json bindings to it (${m.keys.join(", ") || "none found"}); and its data and shared keys named in the RECIPE. ` +
   `Ask me before deleting anything, and back up keys.json and each layout you change as <file>.bak-<date> first. ` +
   `Don't touch other mods. When done, tell me how to install it again.`;
+
+const installPrompt = (m) =>
+  `Install the "${m.name}" mod from ${REPO} (its ${m.folder} folder) into my Herdr home (${appHome()}). ` +
+  `Follow the install prompt in that repo's README.md ("Installing") and the folder's RECIPE.md: check its requirements and tell me ` +
+  `what's missing first, don't overwrite anything, add the layout blocks it needs to the layout I use, ask before replacing a key I use, ` +
+  `and write the version tag to .herdr-mods-version.`;
+
+const KIND = (m) => (m.other ? "other" : m.available ? "available" : "ours");
+const HEADINGS = {
+  available: ["Not installed", "· from herdr-mods; Install starts your agent"],
+  other: ["Other mods", "· not from herdr-mods, so no version or buttons"],
+};
 
 export default class Installed extends View {
   init(_props, cx) {
@@ -165,10 +194,13 @@ export default class Installed extends View {
       .on_click((_e, cx) => { cx.stop_propagation(); act(); })
       .child(label).child(div().text_size(10.5).text_color(t.dim).child(key));
     // Other mods have no source to update from or recipe to remove by: listed only.
-    const update = (m) => m && !m.other && this.ask(m, updatePrompt, "update");
-    const remove = (m) => m && !m.other && this.ask(m, removePrompt, "remove");
-    const firstOther = mods.findIndex((m) => m.other);
-    const headed = (i) => i + (firstOther >= 0 && i >= firstOther ? 1 : 0);
+    const update = (m) => m && KIND(m) === "ours" && this.ask(m, updatePrompt, "update");
+    const remove = (m) => m && KIND(m) === "ours" && this.ask(m, removePrompt, "remove");
+    const install = (m) => m?.available && this.ask(m, installPrompt, "install");
+    // A heading goes before the first row of each section after this repo's installed mods.
+    const headAt = mods.map((m, i) => KIND(m) !== "ours" && (i === 0 || KIND(mods[i - 1]) !== KIND(m)));
+    const headed = (i) => i + headAt.slice(0, i + 1).filter(Boolean).length;
+    const heads = headAt.filter(Boolean).length;
     return v_flex()
       .id("installed")
       .track_focus(this.handle)
@@ -182,6 +214,7 @@ export default class Installed extends View {
         if (e.key === "escape") return closeOverlay(props().overlay);
         if (e.modifiers.control && e.key === "u") update(mods[this.at]);
         else if (e.modifiers.control && e.key === "d") remove(mods[this.at]);
+        else if (e.modifiers.control && e.key === "i") install(mods[this.at]);
         else if (mods.length && (e.key === "down" || e.key === "up")) {
           this.at = (this.at + (e.key === "down" ? 1 : mods.length - 1)) % mods.length;
           this.scroll.scroll_to_item(headed(this.at));
@@ -196,12 +229,13 @@ export default class Installed extends View {
         !mods.length
           ? div().h(30).text_color(t.dim).child(this.mods === null ? "Scanning…" : "No mods found")
           // Popups size to content: the list needs a definite height or it collapses to 0.
-          : v_flex().id("in-list").h(Math.min(480, mods.length * ROW + (firstOther >= 0 ? HEAD : 0))).overflow_y_scrollbar().track_scroll(this.scroll).children(
+          : v_flex().id("in-list").h(Math.min(480, mods.length * ROW + heads * HEAD)).overflow_y_scrollbar().track_scroll(this.scroll).children(
             mods.flatMap((m, i) => {
-              const head = i === firstOther
-                ? [h_flex().id("in-others").flex_none().h(HEAD).px(10).items_end().pb(4).gap(6).text_size(11).font_semibold().text_color(t.dim)
+              const kind = KIND(m);
+              const head = headAt[i]
+                ? [h_flex().id(`in-head-${kind}`).flex_none().h(HEAD).px(10).items_end().pb(4).gap(6).text_size(11).font_semibold().text_color(t.dim)
                   .when(i > 0, (el) => el.border_t(1).border_color(t.border))
-                  .child("Other mods").child(div().font_weight(400).child("· not from herdr-mods, so no version or buttons"))]
+                  .child(HEADINGS[kind][0]).child(div().font_weight(400).child(HEADINGS[kind][1]))]
                 : [];
               const uses = [m.layouts.length ? `layout ${m.layouts.join(", ")}` : "", m.keys.length ? `keys ${m.keys.join(", ")}` : ""].filter(Boolean).join(" · ");
               return [...head, h_flex().id(`in-${i}`).flex_none().h(ROW).px(10).gap(10).items_center().rounded(7).cursor_pointer()
@@ -213,15 +247,16 @@ export default class Installed extends View {
                 .child(v_flex().flex_1().min_w(0).gap(2)
                   .child(h_flex().gap(8).items_center()
                     .child(div().font_semibold().text_color(t.foreground).child(m.name))
-                    .child(div().text_size(11).text_color(t.dim).child(m.other ? "" : m.version))
+                    .child(div().text_size(11).text_color(t.dim).child(kind === "ours" ? m.version : ""))
                     .when(behind(m), (el) => el.child(div().text_size(11).text_color(t.accent).child(m.tagged ? `→ ${latest}` : "not tracked"))))
-                  .child(div().truncate().text_size(11).text_color(t.dim).child(uses || "not used by any layout or key")))
-                .when(i === this.at && !m.other, (el) => el.child(h_flex().gap(6).flex_none()
+                  .child(div().truncate().text_size(11).text_color(t.dim).child(m.available ? m.about : uses || "not used by any layout or key")))
+                .when(i === this.at && kind === "ours", (el) => el.child(h_flex().gap(6).flex_none()
                   .child(button(`in-up-${i}`, "Update", "Ctrl+U", () => update(m)))
-                  .child(button(`in-rm-${i}`, "Remove", "Ctrl+D", () => remove(m)))))];
+                  .child(button(`in-rm-${i}`, "Remove", "Ctrl+D", () => remove(m)))))
+                .when(i === this.at && kind === "available", (el) => el.child(button(`in-add-${i}`, "Install", "Ctrl+I", () => install(m))))];
             }),
           ),
       )
-      .child(div().text_size(11).text_color(t.dim).child("↑↓ move · Update and Remove start your agent in a new tab · Esc close"));
+      .child(div().text_size(11).text_color(t.dim).child("↑↓ move · Update, Remove and Install start your agent in a new tab · Esc close"));
   }
 }
