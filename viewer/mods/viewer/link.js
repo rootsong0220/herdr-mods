@@ -61,7 +61,9 @@ export async function handleLink({ link, source }) {
   }
   remember({ at: Date.now(), raw: link.raw, path: link.path ?? null, cwd: source.cwd, hit });
   if (!hit) {
-    notify({ title: "File not found", body: `${link.raw}\nnot under ${source.cwd ?? "?"}, its git repo or your home folder`, level: "warning", timeout: 5000 });
+    // Name the cleaned-up paths that were looked for ("/dev/x.ts", not "/dev/x.ts를"), so the toast doesn't blame the particle.
+    const tried = candidates(link.raw).slice(1).map((c) => c.path);
+    notify({ title: "File not found", body: `${tried.length ? tried.join(", ") : link.raw}\nnot under ${source.cwd ?? "?"}, its git repo or your home folder`, level: "warning", timeout: 5000 });
     return "handled";
   }
   if (hit.ambiguous) {
