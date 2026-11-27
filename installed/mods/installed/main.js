@@ -16,6 +16,7 @@ const REPO = "https://github.com/rootsong0220/herdr-mods";
 const SELF = "installed";
 const RESCAN_MS = 5 * 60 * 1000;
 const ROW = 44;
+const HEAD = 28;
 const DEFAULT_AGENT = ["claude"];
 // installed.json is Herdr's own bookkeeping of its shipped mods; never write there.
 const CONFIG = "herdr-mods.json";
@@ -40,10 +41,11 @@ async function modNames(dir) {
   }
 }
 
-// Mod names a layout uses: blocks' content.mod, and link_handlers.
+// Mod names a layout uses: blocks' content.mod, link_handlers, and the root's toast and terminal_menu.
 function modsInLayout(node, out = new Set()) {
   if (!node || typeof node !== "object") return out;
   if (typeof node.content?.mod === "string") out.add(node.content.mod);
+  for (const k of ["toast", "terminal_menu"]) if (typeof node[k] === "string") out.add(node[k]);
   for (const h of node.link_handlers ?? []) out.add(h);
   for (const c of node.children ?? []) modsInLayout(c, out);
   return out;
@@ -70,15 +72,20 @@ async function scan() {
   for (const l of layouts()) {
     for (const mod of modsInLayout(json(await read(`${home}/layouts/${l}.json`)))) used.set(mod, [...(used.get(mod) ?? []), l]);
   }
-  const mods = [];
+  // Herdr's record of its shipped mods. Unreadable: list only this repo's, rather than every shipped one as "other".
+  const shipped = json(await read(`${home}/installed.json`));
+  const mods = [], others = [];
   for (const name of (await modNames(`${home}/mods`)).sort()) {
     const tag = (await read(`${home}/mods/${name}/.herdr-mods-version`))?.trim();
     const commit = tag ? null : (await read(`${home}/mods/${name}/.herdr-mods-commit`))?.trim();
-    if (!tag && !commit && !KNOWN.has(name)) continue;
-    const version = tag || (commit ? `commit ${commit.slice(0, 7)}` : "version unknown");
-    mods.push({ name, version, tagged: !!tag, layouts: used.get(name) ?? [], keys: keysFor(keys, name) });
+    const uses = { layouts: used.get(name) ?? [], keys: keysFor(keys, name) };
+    if (tag || commit || KNOWN.has(name)) {
+      mods.push({ name, version: tag || (commit ? `commit ${commit.slice(0, 7)}` : "version unknown"), tagged: !!tag, ...uses });
+    } else if (shipped && typeof shipped === "object" && !Object.prototype.hasOwnProperty.call(shipped, name)) {
+      others.push({ name, version: "not from herdr-mods", other: true, ...uses });
+    }
   }
-  return { agent, mods };
+  return { agent, mods: [...mods, ...others] };
 }
 
 // As the shipped sidebar decides it: a rail when the sidebar is under 160px.
@@ -88,7 +95,7 @@ function narrow(node = layout()) {
   return undefined;
 }
 
-const isBehind = (m, latest) => !m.tagged || (!!latest && newer(latest, m.version));
+const isBehind = (m, latest) => !m.other && (!m.tagged || (!!latest && newer(latest, m.version)));
 
 const updatePrompt = (m) =>
   `Update only the "${m.name}" mod in my Herdr home (${appHome()}) to the latest version of ${REPO} (installed: ${m.version}). ` +
@@ -157,8 +164,11 @@ export default class Installed extends View {
       .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
       .on_click((_e, cx) => { cx.stop_propagation(); act(); })
       .child(label).child(div().text_size(10.5).text_color(t.dim).child(key));
-    const update = (m) => this.ask(m, updatePrompt, "update");
-    const remove = (m) => this.ask(m, removePrompt, "remove");
+    // Other mods have no source to update from or recipe to remove by: listed only.
+    const update = (m) => m && !m.other && this.ask(m, updatePrompt, "update");
+    const remove = (m) => m && !m.other && this.ask(m, removePrompt, "remove");
+    const firstOther = mods.findIndex((m) => m.other);
+    const headed = (i) => i + (firstOther >= 0 && i >= firstOther ? 1 : 0);
     return v_flex()
       .id("installed")
       .track_focus(this.handle)
@@ -174,7 +184,7 @@ export default class Installed extends View {
         else if (e.modifiers.control && e.key === "d") remove(mods[this.at]);
         else if (mods.length && (e.key === "down" || e.key === "up")) {
           this.at = (this.at + (e.key === "down" ? 1 : mods.length - 1)) % mods.length;
-          this.scroll.scroll_to_item(this.at);
+          this.scroll.scroll_to_item(headed(this.at));
         } else return;
         cx.stop_propagation();
         cx.notify();
@@ -184,24 +194,29 @@ export default class Installed extends View {
         .child(div().text_size(11.5).text_color(t.dim).child(latest ? `latest ${latest}` : "latest unknown (needs the updates mod)")))
       .child(
         !mods.length
-          ? div().h(30).text_color(t.dim).child(this.mods === null ? "Scanning…" : "No mods from herdr-mods found")
+          ? div().h(30).text_color(t.dim).child(this.mods === null ? "Scanning…" : "No mods found")
           // Popups size to content: the list needs a definite height or it collapses to 0.
-          : v_flex().id("in-list").h(Math.min(480, mods.length * ROW)).overflow_y_scrollbar().track_scroll(this.scroll).children(
-            mods.map((m, i) => {
+          : v_flex().id("in-list").h(Math.min(480, mods.length * ROW + (firstOther >= 0 ? HEAD : 0))).overflow_y_scrollbar().track_scroll(this.scroll).children(
+            mods.flatMap((m, i) => {
+              const head = i === firstOther
+                ? [h_flex().id("in-others").flex_none().h(HEAD).px(10).items_end().pb(4).gap(6).text_size(11).font_semibold().text_color(t.dim)
+                  .when(i > 0, (el) => el.border_t(1).border_color(t.border))
+                  .child("Other mods").child(div().font_weight(400).child("· not from herdr-mods, so no version or buttons"))]
+                : [];
               const uses = [m.layouts.length ? `layout ${m.layouts.join(", ")}` : "", m.keys.length ? `keys ${m.keys.join(", ")}` : ""].filter(Boolean).join(" · ");
-              return h_flex().id(`in-${i}`).flex_none().h(ROW).px(10).gap(10).items_center().rounded(7).cursor_pointer()
+              return [...head, h_flex().id(`in-${i}`).flex_none().h(ROW).px(10).gap(10).items_center().rounded(7).cursor_pointer()
                 .when(i === this.at, (el) => el.bg(t.hover))
                 .hover((s) => s.bg(t.hover))
                 .on_click((_e, cx) => { this.at = i; cx.notify(); })
                 .child(v_flex().flex_1().min_w(0).gap(2)
                   .child(h_flex().gap(8).items_center()
                     .child(div().font_semibold().text_color(t.foreground).child(m.name))
-                    .child(div().text_size(11).text_color(t.dim).child(m.version))
+                    .child(div().text_size(11).text_color(t.dim).child(m.other ? "" : m.version))
                     .when(behind(m), (el) => el.child(div().text_size(11).text_color(t.accent).child(m.tagged ? `→ ${latest}` : "not tracked"))))
                   .child(div().truncate().text_size(11).text_color(t.dim).child(uses || "not used by any layout or key")))
-                .when(i === this.at, (el) => el.child(h_flex().gap(6).flex_none()
+                .when(i === this.at && !m.other, (el) => el.child(h_flex().gap(6).flex_none()
                   .child(button(`in-up-${i}`, "Update", "Ctrl+U", () => update(m)))
-                  .child(button(`in-rm-${i}`, "Remove", "Ctrl+D", () => remove(m)))));
+                  .child(button(`in-rm-${i}`, "Remove", "Ctrl+D", () => remove(m)))))];
             }),
           ),
       )

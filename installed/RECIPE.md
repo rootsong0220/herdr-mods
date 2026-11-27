@@ -16,13 +16,13 @@ A `Mods` row in the sidebar and a popup listing the mods installed from this rep
   - Second line (11px, `dim`, truncated): `layout <names> · keys <keys>`, or `not used by any layout or key`.
   - **The selected row** ends with two buttons: `Update` (`Ctrl+U`) and `Remove` (`Ctrl+D`). They look like [`projects`](../projects/RECIPE.md)' buttons.
   - The selected row and the hovered row have the `hover` background.
-- `Scanning…` while it reads, `No mods from herdr-mods found` when there are none.
+- `Scanning…` while it reads, `No mods found` when there are none.
 - **Footer** (11px, `dim`): `↑↓ move · Update and Remove start your agent in a new tab · Esc close`.
 
 ## How it behaves
 
-- **Which mods:** every folder in `<Herdr home>/mods/` with a `.herdr-mods-version` file (written by the README's install and update prompts), or the older `.herdr-mods-commit`. Copies installed under another name are found too. A folder named like one of this repo's mods (`inbox`, `recent`, `projects`, `viewer`, `sysmon`, `updates`, `installed`) is listed even without either file, as `version unknown`: it was copied by hand. Other mods without the files (Herdr's own, the person's) are left out.
-- **What uses a mod:** for every layout in `layouts()`, the blocks with `content.mod` equal to its name and its name in `link_handlers`. For `keys.json`, any binding to `mod.open:<name>` or to one of its own `<name>:<command>`s.
+- **Which mods:** every folder in `<Herdr home>/mods/` with a `.herdr-mods-version` file (written by the README's install and update prompts), or the older `.herdr-mods-commit`. Copies installed under another name are found too. A folder named like one of this repo's mods (`inbox`, `recent`, `projects`, `viewer`, `sysmon`, `updates`, `installed`) is listed even without either file, as `version unknown`: it was copied by hand. Herdr's own mods (the keys of Herdr's `installed.json`) are left out. Every other mod folder is listed after them under an `Other mods · not from herdr-mods, so no version or buttons` heading (28px, 11px semibold `dim`, 1px `border` top line): name and uses only, no buttons, never counted as behind. If Herdr's `installed.json` can't be read, other mods are not listed, rather than listing every shipped mod as other.
+- **What uses a mod:** for every layout in `layouts()`, the blocks with `content.mod` equal to its name, its name in `link_handlers`, and the root's `toast` and `terminal_menu`. For `keys.json`, any binding to `mod.open:<name>` or to one of its own `<name>:<command>`s.
 - **Latest version:** the `latest` that the [`updates`](../updates/RECIPE.md) mod keeps in the shared value `updates.state`. It is at most a day old. Without `updates`, nothing is marked as behind except commit-only installs.
 - **Update / Remove** (button, or ctrl+u / ctrl+d on the selected row) close the popup and run `terminal.open {argv: [...agent, prompt], folder: <Herdr home>, place: "tab", name: "update <mod>"}`:
   - **Update:** update only this mod to the repo's latest version, following the README's update prompt for it: its files, the renames from its recipe if it was renamed, its keys and the layout blocks it needs.
@@ -47,7 +47,7 @@ A `Mods` row in the sidebar and a popup listing the mods installed from this rep
 - **Focus:** there is no input, so `init` focuses the view's own `focus_handle()`, and again 600ms later.
 - **APIs used:** `herdr`: `appHome()`, `layout()` (whether the sidebar is a rail), `layouts()`, `readTextFile`, `exec` (only for the listing fallback), `run("terminal.open" | "mod.open")`, `checking()`, `shared("updates.state")`, `props().overlay`, `closeOverlay`, `theme()`. `gpui-base`: `ScrollHandle`.
 - **`keys.json`:** `{ "global": { "alt-m": "mod.open:installed" } }`.
-- **What it reaches:** no network. It reads `mods/*/.herdr-mods-version`, `.herdr-mods-commit`, `layouts/*.json`, `keys.json` and `herdr-mods.json`. The agent it starts reaches GitHub and changes files, after asking.
+- **What it reaches:** no network. It reads `mods/*/.herdr-mods-version`, `.herdr-mods-commit`, `layouts/*.json`, `keys.json`, `herdr-mods.json` and Herdr's `installed.json` (only read). The agent it starts reaches GitHub and changes files, after asking.
 
 ## Watch out
 
