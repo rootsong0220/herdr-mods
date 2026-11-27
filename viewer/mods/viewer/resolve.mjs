@@ -58,10 +58,20 @@ function homeMatches(home, rel) {
   return out;
 }
 
-export function find(cwd, printed, herdrPath, home = homedir()) {
+// Herdr's link text leaves out a Windows drive letter: "C:/dev/x.ts" arrives as "/dev/x.ts".
+// Try the terminal's drive first, then any drive, if exactly one has the file.
+export function onSomeDrive(rel, cwd, exists = existsSync) {
+  const own = /^[A-Za-z]:/.exec(cwd ?? "")?.[0]?.toUpperCase();
+  if (own && exists(own + rel)) return own + rel;
+  const hits = [..."CDEFGHIJKLMNOPQRSTUVWXYZAB"].map((d) => `${d}:${rel}`).filter((p) => !p.startsWith(own ?? "-") && exists(p));
+  return hits.length === 1 ? hits[0] : null;
+}
+
+export function find(cwd, printed, herdrPath, home = homedir(), win = process.platform === "win32") {
   const rel = printed.replace(/^\.[\\/]/, "");
   if (herdrPath && existsSync(herdrPath)) return herdrPath;
   if (rel.startsWith("~/") || rel.startsWith("~\\")) { const p = join(home, rel.slice(2)); return existsSync(p) ? p : null; }
+  if (win && /^[\\/](?![\\/])/.test(rel)) return onSomeDrive(rel, cwd);
   if (isAbsolute(rel)) return existsSync(rel) ? rel : null;
   if (cwd && existsSync(join(cwd, rel))) return join(cwd, rel);
   const root = cwd ? git(cwd, ["rev-parse", "--show-toplevel"])?.trim() : null;

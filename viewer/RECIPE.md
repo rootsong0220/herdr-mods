@@ -30,6 +30,7 @@ Ctrl-click (Cmd-click on macOS) a file path or a web address in any terminal, an
 - **Line numbers:** a path ending in `:42`, `:42:7` or `(42,7)` opens code at line 42.
 - **Finding the file, in order:**
   1. The path Herdr resolved itself. A printed absolute path or `~/` path is checked as is and nothing else.
+     - On Windows, Herdr's link text leaves out the drive letter (`C:/dev/x.ts` arrives as `/dev/x.ts`). Such a path is looked up on the terminal's drive first, then on every other drive, and opens only if exactly one has it.
   2. The terminal's folder plus the printed path.
   3. The terminal's git root plus the printed path.
   4. The one file in that repo, tracked or untracked and not ignored, whose path ends with the printed one.
@@ -79,7 +80,7 @@ Ctrl-click (Cmd-click on macOS) a file path or a web address in any terminal, an
 - Herdr doesn't tell a mod the screen's scale factor, so pages are always captured at 2× (× zoom), which costs memory on 1× screens.
 - **Leftover copies:** `close()` gets 250 ms and is not called for a pane in a hidden tab, so copies can stay in `data/viewer/` until the next day's sweep.
 - **Installing under another name:** the mod's own name appears in `link.js` (`mod: "viewer"`, the `panes()` filter, `mods/viewer/` helper paths), `main.js` (`mods/viewer/`, `data/viewer/`) and the shared keys `viewer.show` / `viewer.clicks`. Rename all of them, or two copies answer each other's clicks.
-- **Platforms:** written for Linux, macOS and Windows, but tested only on Linux. On Linux the browser must be on PATH (or set `VIEWER_CHROME`); the install-folder search is for macOS and Windows. On Windows, Herdr doesn't offer backslash paths, so only `/` paths in terminal text work.
+- **Platforms:** written for Linux, macOS and Windows, but tested only on Linux. On Linux the browser must be on PATH (or set `VIEWER_CHROME`); the install-folder search is for macOS and Windows. On Windows, Herdr doesn't offer backslash paths, so only `/` paths in terminal text work, and it drops the drive letter from them (see Finding the file). `viewer/resolve.test.mjs` checks the drive lookup: `node viewer/resolve.test.mjs`.
 
 ## Done when
 
