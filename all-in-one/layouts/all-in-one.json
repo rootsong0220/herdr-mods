@@ -200,6 +200,16 @@
               "content": {
                 "mod": "recent"
               }
+            },
+            {
+              "id": "status-updates",
+              "type": "block",
+              "size": {
+                "px": 0
+              },
+              "content": {
+                "mod": "updates"
+              }
             }
           ]
         }

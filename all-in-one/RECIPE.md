@@ -1,6 +1,6 @@
 # All-in-one
 
-Everything in this repo at once: Herdr's main window with a CPU / memory meter in the status bar, the Inbox, Recent and Projects popups on keys, and the Viewer for Ctrl/Cmd-clicked paths and web addresses. Optionally the author's keymap too. This folder holds only the layout. The mods come from the other folders of this repo, so there is one copy of each.
+Everything in this repo at once: Herdr's main window with a CPU / memory meter in the status bar, the Inbox, Recent and Projects popups on keys, the Viewer for Ctrl/Cmd-clicked paths and web addresses, and a toast when this repo has a new version. Optionally the author's keymap too. This folder holds only the layout. The mods come from the other folders of this repo, so there is one copy of each.
 
 ![All-in-one](preview.png)
 
@@ -11,11 +11,13 @@ Everything in this repo at once: Herdr's main window with a CPU / memory meter i
   - The shipped `workspace-status`, taking the remaining width.
   - The CPU / MEM meter, 300px wide ([`sysmon-status`](../sysmon-status/RECIPE.md)).
   - A 0px block running `recent`'s visit tracker. It draws nothing.
+  - A 0px block running `updates`, which checks for a new version of this repo once a day. It draws nothing.
 - **Popups**, each opened by a key:
   - Inbox: every agent, the ones that need you first ([`inbox`](../inbox/RECIPE.md)).
   - Recent: tabs in the order you last looked at them ([`recent`](../recent/RECIPE.md)).
   - Projects: switch spaces or open a project folder ([`projects`](../projects/RECIPE.md)).
 - **Viewer:** a pane beside the terminal after a Ctrl/Cmd-click on a path or a web address ([`viewer`](../viewer/RECIPE.md)).
+- **Update notice:** a toast when a newer version tag is out ([`updates`](../updates/RECIPE.md)).
 
 ## How it behaves
 
@@ -36,7 +38,8 @@ Each piece behaves as its own recipe says. Together:
      { "id": "status", "type": "row", "size": { "px": 28 }, "children": [
          { "id": "status-base", "type": "block", "content": { "mod": "workspace-status" } },
          { "id": "status-sysmon", "type": "block", "size": { "px": 300 }, "content": { "mod": "sysmon" } },
-         { "id": "status-recent", "type": "block", "size": { "px": 0 }, "content": { "mod": "recent" } } ] }
+         { "id": "status-recent", "type": "block", "size": { "px": 0 }, "content": { "mod": "recent" } },
+         { "id": "status-updates", "type": "block", "size": { "px": 0 }, "content": { "mod": "updates" } } ] }
      ```
   2. The root has `"link_handlers": ["viewer"]`.
 - **Mods**, each copied from its folder in this repo (not from this folder):
@@ -45,6 +48,7 @@ Each piece behaves as its own recipe says. Together:
   - `recent/mods/recent`
   - `projects/mods/projects`
   - `viewer/mods/viewer`
+  - `updates/mods/updates`
 - **Keys:** either merge `inbox/keys.json`, `recent/keys.json` and `projects/keys.json`, or merge `keymap/keys.json` instead.
 - It uses no shipped mod beyond `main`'s own. It has no art of its own.
 
@@ -55,16 +59,19 @@ This folder has no `mods/`, so the usual steps in `AGENTS.md` (in the Herdr home
 1. **Requirements.** Check them and tell the person what's missing before copying anything. Ask whether to go on without it, and don't install programs yourself.
    - `herdr-app --version` must be 0.1.17 or newer, for the viewer's link handlers.
    - For the viewer: Node 22+, `git`, and Chrome, Chromium or Edge (see its recipe).
+   - For updates: `git`. Without it, the notice stays silent.
    - On macOS or Windows (check with `uname` or the OS you run on), don't ask: leave out the `sysmon` mod and remove the `status-sysmon` block from the layout's status row. The meter would only be an empty 300px strip there. Tell the person you left it out.
-2. **Read every file** of this folder and of the five mod folders above. Tell the person what runs programs, reads files outside its folder or reaches the network:
+2. **Read every file** of this folder and of the six mod folders above. Tell the person what runs programs, reads files outside its folder or reaches the network:
    - `projects` reads and writes `projects.json` in the Herdr home (shared with any other copy of it), and runs `find` or PowerShell only when it can't list a folder itself.
    - `viewer` runs `node`, `git`, a headless browser and the system opener, and loads the web pages you click.
    - `sysmon` reads `/proc` (Linux only).
+   - `updates` runs `git ls-remote` against github.com once a day, and reads its own `.herdr-mods-version`.
    - `inbox` and `recent` use Herdr's data and the shipped `mods/workspace-chrome/spinner.svg`; `recent` writes its visit list to Herdr's shared state.
-3. **Copy** `layouts/all-in-one.json` and the five mod folders into the Herdr home. Never overwrite.
+3. **Copy** `layouts/all-in-one.json` and the six mod folders into the Herdr home. Never overwrite.
    - When a name is taken, rename the new copy and update `"mod"` in the layout, `link_handlers`, and the renames each mod's recipe lists.
    - `recent` has its shared key `recent.tabs`.
    - `viewer` has `mods/viewer/`, `data/viewer/`, `viewer.show`, `viewer.clicks`, and in `link.js` both `mod: "viewer"` and the `p.mod === "viewer"` test.
+   - `updates` has `SELF` and the shared key `updates.state` in `main.js`.
 4. **Keys.** Ask which set the person wants: the three suggested keys, or the author's keymap. Merge it, ask before replacing any key already in use, and point `mod.open:` at the installed names.
    - If mods were renamed because older copies exist, the existing keys still open the old copies. Ask whether to move those keys to the new copies, or which new keys to use.
    - Recent's popup and its tracker must be the same copy: a renamed tracker writes its own history, so a key that opens the old popup won't show it.
@@ -74,13 +81,13 @@ This folder has no `mods/`, so the usual steps in `AGENTS.md` (in the Herdr home
 
 - Herdr only lets link handlers run on a personal layout. This file is one once copied into `layouts/`, so the viewer works without cloning `main`.
 - The layout is a copy of 0.1.17's `main`. Later Herdr updates to `main` don't reach it. To pick them up, clone the new `main` and apply the two changes above again.
-- The `recent` block must stay in the layout, or nothing records visits.
+- The `recent` and `updates` blocks must stay in the layout, or nothing records visits and nothing checks for updates.
 - Installing only some of the mods is fine. Drop the blocks and keys of the ones left out, and remove `link_handlers` if `viewer` is left out.
 - Tested on Linux with Herdr 0.1.17. macOS and Windows are untested.
 
 ## Done when
 
-- `herdr-app check` passes for `inbox`, `recent`, `projects` and `viewer`, and on Linux `sysmon` (or their installed names).
+- `herdr-app check` passes for `inbox`, `recent`, `projects`, `viewer` and `updates`, and on Linux `sysmon` (or their installed names).
 - On Linux, after `layout.switch {"name":"all-in-one"}`, the status bar shows `CPU` and `MEM` meters on the right. On macOS and Windows, the layout has no `status-sysmon` block and no `sysmon` mod was copied.
 - The chosen Inbox, Recent and Projects keys open the installed copies' popups.
 - Visit tab A, then tab B, then open Recent: B is the first row and the cursor is on A.
