@@ -28,7 +28,7 @@ One popup to switch spaces and to open projects: the spaces you have open come f
   3. Each root followed by the folders directly under it, sorted by name.
 
   A folder that is already an open space's folder is listed only once, as the space. Hidden folders (`.git`, `.cache`) are left out.
-- **Cursor:** it opens on the shown space, so one ↑ or ↓ reaches the neighbouring space. ↑/↓ wrap around at both ends.
+- **Cursor:** it opens on the shown space, so one ↑ or ↓ reaches the neighbouring space. ↑/↓ wrap around at both ends. Hovering a row moves the cursor there, so the buttons follow the pointer.
 - **Filter:** split what you typed on whitespace. A row stays if every word appears, ignoring case, in the space name and folder, or in the folder path. Typing moves the cursor to the first row.
 - **Enter or a click** closes the popup, then:
   - `space.select` when the row is an open space.

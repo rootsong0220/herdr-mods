@@ -222,6 +222,8 @@ export default class Projects extends View {
                 .when(i === this.at, (el) => el.bg(t.hover))
                 .when(i === firstDir && i > 0, (el) => el.border_t(1).border_color(t.border))
                 .hover((s) => s.bg(t.hover))
+                // Hovering selects, so the row under the pointer shows its buttons and ctrl+p / ctrl+r act on it.
+                .on_hover((hovered, cx) => { if (hovered && this.at !== i) { this.at = i; cx.notify(); } })
                 .on_click((_e, cx) => this.open(r, cx));
               if (r.addRoot) {
                 return row
