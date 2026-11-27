@@ -45,7 +45,7 @@ https://github.com/rootsong0220/herdr-mods/tree/main/all-in-one 을 내 Herdr에
 - 기존 파일은 덮어쓰지 마. keys.json을 바꾸기 전에 keys.json.bak-<날짜>로 백업해.
 - 키는 각 mod가 제안하는 키로 하고, 이미 쓰는 키와 겹치면 바꾸지 말고 물어봐.
 - 설치한 각 mod 폴더의 .herdr-mods-version에 그 태그를 남겨.
-- 설치한 것 중에 updates(업데이트 알림)가 없으면 updates/RECIPE.md대로 같이 설치할지 물어봐.
+- 설치한 것 중에 updates(업데이트 알림)와 installed(사이드바 Mods 목록)가 없으면 각 RECIPE.md대로 같이 설치할지 물어봐.
 - 끝나면 각 mod에 herdr-app check를 돌리고(herdr-app 명령이 없으면 알려주고 건너뛰어), 새 레이아웃이 있으면 전환한 뒤, 설치한 것, 이름을 바꾼 것, 원래대로 돌아가는 방법, 전부 지우는 방법을 정리해줘.
 ```
 
@@ -73,7 +73,7 @@ https://github.com/rootsong0220/herdr-mods 에서 설치한 항목을 최신 버
 - 내 Herdr 홈에서 이 repo로 설치한 것을 찾아: mod(inbox, recent, projects, viewer, sysmon, updates, installed, 또는 설치할 때 바꾼 이름)와 레이아웃(all-in-one, sysmon-status).
 - 각 mod의 .herdr-mods-version(예전 설치는 대신 .herdr-mods-commit)을 태그와 비교하고, 모든 파일을 repo 폴더와 diff로 비교해. diff 없이 최신이라고 판단하지 마.
 - 레이아웃은 repo의 것과 diff를 보여주고 바꾸기 전에 물어봐. 내가 직접 넣은 칸은 남겨.
-- updates(업데이트 알림)가 설치돼 있지 않으면 updates/RECIPE.md대로 설치할지 물어봐.
+- updates(업데이트 알림)나 installed(사이드바 Mods 목록)가 설치돼 있지 않으면 각 RECIPE.md대로 설치할지 물어봐. 이 repo의 레이아웃에 그 칸이 이미 있으면 둘 다 필요해.
 - 다른 파일은 교체해 (업데이트라 덮어써도 됨). 단 내가 직접 고친 파일이면 차이를 보여주고 먼저 물어봐. 다른 이름으로 설치한 mod는 RECIPE에 적힌 이름 변경을 다시 적용해.
 - 내 데이터(projects.json, Recent 방문 기록)는 그대로 둬. Windows라면 projects.json에서 "~/"로 시작하는 항목은 전체 경로로 바꿔.
 - 각 keys.json의 키를 병합하고, 내가 쓰는 키를 바꿔야 하면 먼저 물어봐.

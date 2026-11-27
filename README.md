@@ -45,7 +45,7 @@ Install https://github.com/rootsong0220/herdr-mods/tree/main/all-in-one into my 
 - Don't overwrite anything. Back up keys.json as keys.json.bak-<date> before changing it.
 - Use the keys suggested by each mod; if one is already in use, ask me instead of replacing it.
 - Write the tag to .herdr-mods-version in each installed mod folder.
-- If updates (the update notice) isn't among what you installed, ask whether to add it too, following updates/RECIPE.md.
+- If updates (the update notice) and installed (the Mods list in the sidebar) aren't among what you installed, ask whether to add them too, following their RECIPE.md.
 - When done, run herdr-app check on each mod (if the herdr-app command isn't found, say so and skip it), switch to the new layout if there is one, and tell me what was installed, what was renamed, how to switch back and how to remove it all.
 ```
 
@@ -73,7 +73,7 @@ Update what I installed from https://github.com/rootsong0220/herdr-mods to the l
 - Find what I installed from it in my Herdr home: the mods (inbox, recent, projects, viewer, sysmon, updates, installed, or the names they were installed under) and the layouts (all-in-one, sysmon-status).
 - For each mod, compare its .herdr-mods-version (older installs have .herdr-mods-commit instead) with the tag, and diff every file against the repo folder. Don't call it up to date without a diff.
 - For each layout, show me the diff against the repo's and ask before changing it. Keep blocks I added myself.
-- If updates (the update notice) isn't installed, ask whether to install it, following updates/RECIPE.md.
+- If updates (the update notice) or installed (the Mods list in the sidebar) isn't installed, ask whether to install it, following its RECIPE.md. A layout from this repo that already has their blocks needs both.
 - Replace the files that differ (this is an update, so overwriting is fine), but if I changed a file myself, show the difference and ask first. Redo the renames the recipe lists for mods installed under another name.
 - Keep my data (projects.json, Recent's history). On Windows, rewrite projects.json entries starting with "~/" as full paths.
 - Merge the keys from each keys.json; ask before replacing a key I use.
