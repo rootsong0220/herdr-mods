@@ -207,6 +207,8 @@ export default class Installed extends View {
               return [...head, h_flex().id(`in-${i}`).flex_none().h(ROW).px(10).gap(10).items_center().rounded(7).cursor_pointer()
                 .when(i === this.at, (el) => el.bg(t.hover))
                 .hover((s) => s.bg(t.hover))
+                // Hovering selects, so the row under the pointer has the buttons and ctrl+u / ctrl+d act on it.
+                .on_hover((hovered, cx) => { if (hovered && this.at !== i) { this.at = i; cx.notify(); } })
                 .on_click((_e, cx) => { this.at = i; cx.notify(); })
                 .child(v_flex().flex_1().min_w(0).gap(2)
                   .child(h_flex().gap(8).items_center()

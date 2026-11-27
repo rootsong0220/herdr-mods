@@ -29,7 +29,7 @@ A `Mods` row in the sidebar and a popup listing the mods installed from this rep
   - **Remove:** read the mod's recipe, list everything it added (its folder, layout blocks and `link_handlers` entries, keys, data and shared keys), ask before deleting, and back up `keys.json` and each changed layout first.
   - The agent asks its questions in that tab. Nothing is changed before it does.
 - **The agent:** `["claude"]`. To use another one, write `<Herdr home>/herdr-mods.json`: `{ "agent": ["codex"] }`. The prompt is passed as the last argument. Not `installed.json`: that file is Herdr's own record of its shipped mods.
-- ↑/↓ move and wrap. A click selects a row. Esc closes the popup.
+- ↑/↓ move and wrap. Hovering a row (or clicking it) selects it, so the buttons follow the pointer. Esc closes the popup.
 - **Opening:** the `Mods` row, or `alt-m` (from `keys.json`). Without either, use `mod.open {"name":"installed"}`.
 - **The row's count** rescans every 5 minutes; the popup reads everything each time it opens.
 
