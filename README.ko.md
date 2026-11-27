@@ -74,6 +74,7 @@ https://github.com/rootsong0220/herdr-mods 에서 설치한 항목을 최신 버
 - 각 mod의 .herdr-mods-version(예전 설치는 대신 .herdr-mods-commit)을 태그와 비교하고, 모든 파일을 repo 폴더와 diff로 비교해. diff 없이 최신이라고 판단하지 마.
 - 레이아웃은 repo의 것과 diff를 보여주고 바꾸기 전에 물어봐. 내가 직접 넣은 칸은 남겨.
 - updates(업데이트 알림)나 installed(사이드바 Mods 목록)가 설치돼 있지 않으면 각 RECIPE.md대로 설치할지 물어봐. 이 repo의 레이아웃에 그 칸이 이미 있으면 둘 다 필요해.
+- 그 밖에 repo에 있는데 내가 설치하지 않은 mod를 각각 무엇을 하는지 한 줄로 알려주고(새 mod는 CHANGELOG.md 참고), 어떤 걸 설치할지 물어봐.
 - 다른 파일은 교체해 (업데이트라 덮어써도 됨). 단 내가 직접 고친 파일이면 차이를 보여주고 먼저 물어봐. 다른 이름으로 설치한 mod는 RECIPE에 적힌 이름 변경을 다시 적용해.
 - 내 데이터(projects.json, Recent 방문 기록)는 그대로 둬. Windows라면 projects.json에서 "~/"로 시작하는 항목은 전체 경로로 바꿔.
 - 각 keys.json의 키를 병합하고, 내가 쓰는 키를 바꿔야 하면 먼저 물어봐.

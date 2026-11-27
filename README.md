@@ -74,6 +74,7 @@ Update what I installed from https://github.com/rootsong0220/herdr-mods to the l
 - For each mod, compare its .herdr-mods-version (older installs have .herdr-mods-commit instead) with the tag, and diff every file against the repo folder. Don't call it up to date without a diff.
 - For each layout, show me the diff against the repo's and ask before changing it. Keep blocks I added myself.
 - If updates (the update notice) or installed (the Mods list in the sidebar) isn't installed, ask whether to install it, following its RECIPE.md. A layout from this repo that already has their blocks needs both.
+- List the repo's other mods I haven't installed, say in one line what each does (see CHANGELOG.md for new ones), and ask which to install.
 - Replace the files that differ (this is an update, so overwriting is fine), but if I changed a file myself, show the difference and ask first. Redo the renames the recipe lists for mods installed under another name.
 - Keep my data (projects.json, Recent's history). On Windows, rewrite projects.json entries starting with "~/" as full paths.
 - Merge the keys from each keys.json; ask before replacing a key I use.
