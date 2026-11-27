@@ -117,7 +117,13 @@ const isBehind = (m, latest) => !m.other && !m.available && (!m.tagged || (!!lat
 const updatePrompt = (m) =>
   `Update only the "${m.name}" mod in my Herdr home (${appHome()}) to the latest version of ${REPO} (installed: ${m.version}). ` +
   `Get the repo and follow the update prompt in its README.md ("Updating"), applied to this one mod: its files, ` +
-  `the renames its RECIPE.md lists if it was installed under another name, its keys, and the layout blocks it needs. Leave the other mods as they are.`;
+  `the renames its RECIPE.md lists if it was installed under another name, its keys, and the layout blocks it needs. Leave the other mods as they are, ` +
+  `except: for each other mod from this repo whose files are identical to its folder at the new tag, write that tag to its .herdr-mods-version, ` +
+  `so a mod the release didn't change doesn't show as behind.`;
+
+const updateAllPrompt = () =>
+  `Update what I installed from ${REPO} to the latest version. My Herdr home is ${appHome()}. ` +
+  `Get the repo and follow the update prompt in its README.md ("Updating") step by step.`;
 
 const removePrompt = (m) =>
   `Remove the "${m.name}" mod from my Herdr home (${appHome()}). It was installed from ${REPO} (version ${m.version}). ` +
@@ -197,6 +203,7 @@ export default class Installed extends View {
     const update = (m) => m && KIND(m) === "ours" && this.ask(m, updatePrompt, "update");
     const remove = (m) => m && KIND(m) === "ours" && this.ask(m, removePrompt, "remove");
     const install = (m) => m?.available && this.ask(m, installPrompt, "install");
+    const updateAll = () => this.ask({ name: "all" }, updateAllPrompt, "update");
     // A heading goes before the first row of each section after this repo's installed mods.
     const headAt = mods.map((m, i) => KIND(m) !== "ours" && (i === 0 || KIND(mods[i - 1]) !== KIND(m)));
     const headed = (i) => i + headAt.slice(0, i + 1).filter(Boolean).length;
@@ -215,6 +222,7 @@ export default class Installed extends View {
         if (e.modifiers.control && e.key === "u") update(mods[this.at]);
         else if (e.modifiers.control && e.key === "d") remove(mods[this.at]);
         else if (e.modifiers.control && e.key === "i") install(mods[this.at]);
+        else if (e.modifiers.control && e.key === "a") updateAll();
         else if (mods.length && (e.key === "down" || e.key === "up")) {
           this.at = (this.at + (e.key === "down" ? 1 : mods.length - 1)) % mods.length;
           this.scroll.scroll_to_item(headed(this.at));
@@ -224,7 +232,8 @@ export default class Installed extends View {
       })
       .child(h_flex().items_center().gap(10)
         .child(div().flex_1().text_size(15).font_semibold().text_color(t.foreground).child("Installed mods"))
-        .child(div().text_size(11.5).text_color(t.dim).child(latest ? `latest ${latest}` : "latest unknown (needs the updates mod)")))
+        .child(div().text_size(11.5).text_color(t.dim).child(latest ? `latest ${latest}` : "latest unknown (needs the updates mod)"))
+        .when(mods.some((m) => KIND(m) === "ours"), (el) => el.child(button("in-up-all", "Update all", "Ctrl+A", updateAll))))
       .child(
         !mods.length
           ? div().h(30).text_color(t.dim).child(this.mods === null ? "Scanning…" : "No mods found")
@@ -257,6 +266,6 @@ export default class Installed extends View {
             }),
           ),
       )
-      .child(div().text_size(11).text_color(t.dim).child("↑↓ move · Update, Remove and Install start your agent in a new tab · Esc close"));
+      .child(div().text_size(11).text_color(t.dim).child("↑↓ move · Update all, Update, Remove and Install start your agent in a new tab · Esc close"));
   }
 }

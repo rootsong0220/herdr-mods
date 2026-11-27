@@ -5,6 +5,7 @@ Versions are git tags. The install and update prompts in the README take the lat
 ## v0.1.1 — 2026-11-27
 
 - `installed`: a `Not installed` section lists this repo's mods you don't have yet, each with an Install button (ctrl+i) that starts your agent to install it.
+- `installed`: an `Update all` button (ctrl+a) runs the README's update prompt for every mod. Updating one mod also marks the other mods the release didn't change as up to date.
 - The update prompt now lists the repo's mods you haven't installed and asks which to install, so new mods show up when you update.
 
 ## v0.1.0 — 2026-11-27

@@ -10,7 +10,7 @@ A `Mods` row in the sidebar and a popup listing the mods installed from this rep
   - When the sidebar is a rail (under 160px wide), the row is a 32px centred icon with a 6px `accent` dot when any mod is behind.
   - A click opens the popup.
 - A popup at the top of the window, 40px down, 640px wide, up to 80% of the window height. Its background is `popover`, with 18px padding, a 10px gap and 13px text.
-- **Header:** `Installed mods` (15px, semibold, `foreground`), and on the right `latest <tag>` (11.5px, `dim`), or `latest unknown (needs the updates mod)`.
+- **Header:** `Installed mods` (15px, semibold, `foreground`), and on the right `latest <tag>` (11.5px, `dim`), or `latest unknown (needs the updates mod)`, then an `Update all` (`Ctrl+A`) button when any of this repo's mods is installed.
 - **Rows** are 44px tall, radius 7, 10px side padding, one per mod, sorted by name:
   - First line: the mod's folder name (semibold, `foreground`), its version in 11px `dim` (`v0.2.0`, `commit abc1234` for installs from before version tags, or `version unknown`), then in 11px `accent` either `→ <latest>` when a newer tag is out, or `not tracked` when there is no version tag.
   - Second line (11px, `dim`, truncated): `layout <names> · keys <keys>`, or `not used by any layout or key`.
@@ -26,7 +26,8 @@ A `Mods` row in the sidebar and a popup listing the mods installed from this rep
 - **What uses a mod:** for every layout in `layouts()`, the blocks with `content.mod` equal to its name, its name in `link_handlers`, and the root's `toast` and `terminal_menu`. For `keys.json`, any binding to `mod.open:<name>` or to one of its own `<name>:<command>`s.
 - **Latest version:** the `latest` that the [`updates`](../updates/RECIPE.md) mod keeps in the shared value `updates.state`. It is at most a day old. Without `updates`, nothing is marked as behind except commit-only installs.
 - **Update / Remove** (button, or ctrl+u / ctrl+d on the selected row) close the popup and run `terminal.open {argv: [...agent, prompt], folder: <Herdr home>, place: "tab", name: "update <mod>"}`:
-  - **Update:** update only this mod to the repo's latest version, following the README's update prompt for it: its files, the renames from its recipe if it was renamed, its keys and the layout blocks it needs.
+  - **Update all** (header button, ctrl+a): the README's whole update prompt, for every mod from this repo at once. This is the one to use after the update toast.
+  - **Update:** update only this mod to the repo's latest version, following the README's update prompt for it: its files, the renames from its recipe if it was renamed, its keys and the layout blocks it needs. Other mods from this repo whose files are identical to the new tag get the new tag in their `.herdr-mods-version` too, so a mod the release didn't change doesn't stay behind.
   - **Install** (the only button on a `Not installed` row, ctrl+i): install that mod following the README's install prompt and the folder's recipe: requirements first, no overwriting, the layout blocks it needs in the layout in use, ask before replacing a key, and write `.herdr-mods-version`.
   - **Remove:** read the mod's recipe, list everything it added (its folder, layout blocks and `link_handlers` entries, keys, data and shared keys), ask before deleting, and back up `keys.json` and each changed layout first.
   - The agent asks its questions in that tab. Nothing is changed before it does.
