@@ -14,7 +14,7 @@ Mods and layouts for [Herdr](https://herdr.dev). Each folder is one entry. Its `
 | [`keymap/`](keymap/README.md) | keys | The author's `keys.json` (vim-style pane moves, `ctrl-b` prefix, popup keys), to merge into yours. Not a gallery item |
 | [`viewer/`](viewer/RECIPE.md) | mod | Ctrl/Cmd-click a path or web address in a terminal to see it in a pane beside it: code at the line, markdown, images, pages. Finds paths agents print relative to their repo. |
 | [`updates/`](updates/RECIPE.md) | mod | A toast when a newer version of this repo is out (checked once a day). Needs a 0px block in your layout |
-| [`installed/`](installed/RECIPE.md) | mod | Popup of the mods installed from this repo, with their versions and what uses them. Update or remove one with a button that starts your agent (suggested key `alt-m`) |
+| [`installed/`](installed/RECIPE.md) | mod | A `Mods` row in the sidebar that opens the list of mods installed from this repo, with their versions and what uses them. Update or remove one with a button that starts your agent (suggested key `alt-m`) |
 
 Versions and what changed in each: [`CHANGELOG.md`](CHANGELOG.md).
 

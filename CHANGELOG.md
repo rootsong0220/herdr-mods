@@ -4,7 +4,7 @@ Versions are git tags. The install and update prompts in the README take the lat
 
 ## v0.3.0 — 2026-11-27
 
-- New [`installed`](installed/RECIPE.md) mod (`alt-m`): the mods installed from this repo with their versions, layouts and keys. Its Update and Remove buttons start your agent in a new tab to update or remove that one mod. `all-in-one` includes it.
+- New [`installed`](installed/RECIPE.md) mod: a `Mods` row in the sidebar (above `Settings`, `N behind` when mods are out of date) and `alt-m` open a list of the mods installed from this repo, with their versions, layouts and keys. Its Update and Remove buttons start your agent in a new tab to update or remove that one mod. Mods copied by hand under this repo's names show as `version unknown`. `all-in-one` includes it.
 
 ## v0.2.0 — 2026-11-27
 

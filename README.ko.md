@@ -14,7 +14,7 @@
 | [`keymap/`](keymap/README.ko.md) | 키 배치 | 작성자의 `keys.json` (vim식 pane 이동, `ctrl-b` 접두 키, 팝업 키). 내 키 설정에 병합해서 씁니다. gallery 항목은 아닙니다 |
 | [`viewer/`](viewer/RECIPE.md) | mod | 터미널의 경로나 웹 주소를 Ctrl/Cmd-클릭하면 바로 옆 pane에 보여줍니다. 코드(클릭한 줄로 이동), markdown, 이미지, 웹페이지를 지원하고, agent가 repo 기준으로 쓴 상대 경로도 찾습니다. |
 | [`updates/`](updates/RECIPE.md) | mod | 이 repo의 새 버전이 나오면 toast로 알립니다 (하루 한 번 확인). 레이아웃에 0px 칸이 하나 필요합니다 |
-| [`installed/`](installed/RECIPE.md) | mod | 이 repo에서 설치한 mod 목록 팝업. 버전과 쓰는 곳을 보여 주고, 버튼으로 agent를 띄워 mod 하나를 업데이트하거나 지웁니다 (제안 키 `alt-m`) |
+| [`installed/`](installed/RECIPE.md) | mod | 사이드바의 `Mods` 줄에서 이 repo로 설치한 mod 목록을 엽니다. 버전과 쓰는 곳을 보여 주고, 버튼으로 agent를 띄워 mod 하나를 업데이트하거나 지웁니다 (제안 키 `alt-m`) |
 
 버전별 변경 내역은 [`CHANGELOG.md`](CHANGELOG.md)에 있습니다.
 
