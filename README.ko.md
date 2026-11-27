@@ -6,7 +6,7 @@
 
 | 폴더 | 종류 | 설명 |
 |---|---|---|
-| [`all-in-one/`](all-in-one/RECIPE.md) | 레이아웃 묶음 | 아래 항목 전부를 한 번에. CPU·메모리 미터가 있는 기본 창에 Inbox, Recent, Projects, Viewer, 업데이트 알림을 붙이고 키 세트를 고릅니다. mod는 각자의 폴더에서 가져와 설치합니다 |
+| [`all-in-one/`](all-in-one/RECIPE.md) | 레이아웃 묶음 | 아래 항목 전부를 한 번에. CPU·메모리 미터가 있는 기본 창에 Inbox, Recent, Projects, Viewer, 업데이트 알림, 설치된 mod 목록을 붙이고 키 세트를 고릅니다. mod는 각자의 폴더에서 가져와 설치합니다 |
 | [`sysmon-status/`](sysmon-status/RECIPE.md) | 레이아웃 | 기본 `main` 레이아웃의 상태 바에 CPU·메모리 사용량 미터를 더한 것 |
 | [`inbox/`](inbox/RECIPE.md) | mod | 모든 agent를 보여주는 키보드 중심 팝업. 입력을 기다리는 agent가 맨 위에 옵니다 (제안 키 `alt-2`) |
 | [`recent/`](recent/RECIPE.md) | mod | 최근에 본 탭 순서로 보여주는 팝업. 열고 Enter를 누르면 직전 두 탭을 오갑니다 (제안 키 `ctrl-e`. 셸의 줄 끝 이동을 가져가므로 대안은 `alt-e`). 레이아웃에 0px 칸이 하나 필요합니다. [Built from](recent/RECIPE.md#built-from) 참고 |
@@ -14,6 +14,7 @@
 | [`keymap/`](keymap/README.ko.md) | 키 배치 | 작성자의 `keys.json` (vim식 pane 이동, `ctrl-b` 접두 키, 팝업 키). 내 키 설정에 병합해서 씁니다. gallery 항목은 아닙니다 |
 | [`viewer/`](viewer/RECIPE.md) | mod | 터미널의 경로나 웹 주소를 Ctrl/Cmd-클릭하면 바로 옆 pane에 보여줍니다. 코드(클릭한 줄로 이동), markdown, 이미지, 웹페이지를 지원하고, agent가 repo 기준으로 쓴 상대 경로도 찾습니다. |
 | [`updates/`](updates/RECIPE.md) | mod | 이 repo의 새 버전이 나오면 toast로 알립니다 (하루 한 번 확인). 레이아웃에 0px 칸이 하나 필요합니다 |
+| [`installed/`](installed/RECIPE.md) | mod | 이 repo에서 설치한 mod 목록 팝업. 버전과 쓰는 곳을 보여 주고, 버튼으로 agent를 띄워 mod 하나를 업데이트하거나 지웁니다 (제안 키 `alt-m`) |
 
 버전별 변경 내역은 [`CHANGELOG.md`](CHANGELOG.md)에 있습니다.
 
@@ -31,6 +32,7 @@
 | `projects` | 검증 | 코드상 지원 | 코드상 지원 | 0.1.16 이상 | 없음. Windows에서 홈 폴더 밖 root는 PowerShell로 읽음 |
 | `viewer` | 검증 | 코드상 지원 | 코드상 지원 | **0.1.17 이상** (터미널 링크 처리) | Node 22 이상, `git`. 웹페이지·`.html`은 Chrome, Chromium 또는 Edge |
 | `updates` | 검증 | 코드상 지원 | 코드상 지원 | 0.1.16 이상 | `git` |
+| `installed` | 검증 (목록만) | 코드상 지원 | 코드상 지원 | 0.1.16 이상 | 버튼용 agent CLI (기본 `claude`) |
 
 ## 설치
 
@@ -57,6 +59,7 @@ https://github.com/rootsong0220/herdr-mods/tree/main/all-in-one 을 내 Herdr에
 - https://github.com/rootsong0220/herdr-mods/tree/main/projects
 - https://github.com/rootsong0220/herdr-mods/tree/main/viewer
 - https://github.com/rootsong0220/herdr-mods/tree/main/updates
+- https://github.com/rootsong0220/herdr-mods/tree/main/installed
 
 각 폴더의 `RECIPE.md`는 설치하는 agent가 읽는 문서라 영어로만 제공합니다.
 
@@ -67,7 +70,7 @@ https://github.com/rootsong0220/herdr-mods/tree/main/all-in-one 을 내 Herdr에
 ```
 https://github.com/rootsong0220/herdr-mods 에서 설치한 항목을 최신 버전으로 업데이트해줘.
 - 최신 버전 태그는 그 README의 설치 문장과 같은 방법으로 받아 (태그를 git clone, 또는 태그의 zip). 웹 페이지나 raw.githubusercontent.com으로 읽지 마 (최대 5분 캐시됨).
-- 내 Herdr 홈에서 이 repo로 설치한 것을 찾아: mod(inbox, recent, projects, viewer, sysmon, updates, 또는 설치할 때 바꾼 이름)와 레이아웃(all-in-one, sysmon-status).
+- 내 Herdr 홈에서 이 repo로 설치한 것을 찾아: mod(inbox, recent, projects, viewer, sysmon, updates, installed, 또는 설치할 때 바꾼 이름)와 레이아웃(all-in-one, sysmon-status).
 - 각 mod의 .herdr-mods-version(예전 설치는 대신 .herdr-mods-commit)을 태그와 비교하고, 모든 파일을 repo 폴더와 diff로 비교해. diff 없이 최신이라고 판단하지 마.
 - 레이아웃은 repo의 것과 diff를 보여주고 바꾸기 전에 물어봐. 내가 직접 넣은 칸은 남겨.
 - updates(업데이트 알림)가 설치돼 있지 않으면 updates/RECIPE.md대로 설치할지 물어봐.

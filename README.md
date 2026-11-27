@@ -6,7 +6,7 @@ Mods and layouts for [Herdr](https://herdr.dev). Each folder is one entry. Its `
 
 | Folder | Kind | What it is |
 |---|---|---|
-| [`all-in-one/`](all-in-one/RECIPE.md) | layout bundle | Everything below at once: main window with the CPU / memory meter, Inbox, Recent, Projects, Viewer and the update notice, with a choice of keys. Installs the mods from their own folders |
+| [`all-in-one/`](all-in-one/RECIPE.md) | layout bundle | Everything below at once: main window with the CPU / memory meter, Inbox, Recent, Projects, Viewer, the update notice and the installed-mods list, with a choice of keys. Installs the mods from their own folders |
 | [`sysmon-status/`](sysmon-status/RECIPE.md) | layout | Shipped main layout plus a live CPU / memory meter in the status bar |
 | [`inbox/`](inbox/RECIPE.md) | mod | Keyboard-first popup of every agent, the ones that need you first (suggested key `alt-2`) |
 | [`recent/`](recent/RECIPE.md) | mod | Recently visited tabs, most recent first; open and Enter flips between the last two (suggested key `ctrl-e`; it takes end-of-line from the shell, `alt-e` is the alternative). Needs a 0px block in your layout, see [Built from](recent/RECIPE.md#built-from) |
@@ -14,6 +14,7 @@ Mods and layouts for [Herdr](https://herdr.dev). Each folder is one entry. Its `
 | [`keymap/`](keymap/README.md) | keys | The author's `keys.json` (vim-style pane moves, `ctrl-b` prefix, popup keys), to merge into yours. Not a gallery item |
 | [`viewer/`](viewer/RECIPE.md) | mod | Ctrl/Cmd-click a path or web address in a terminal to see it in a pane beside it: code at the line, markdown, images, pages. Finds paths agents print relative to their repo. |
 | [`updates/`](updates/RECIPE.md) | mod | A toast when a newer version of this repo is out (checked once a day). Needs a 0px block in your layout |
+| [`installed/`](installed/RECIPE.md) | mod | Popup of the mods installed from this repo, with their versions and what uses them. Update or remove one with a button that starts your agent (suggested key `alt-m`) |
 
 Versions and what changed in each: [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -31,6 +32,7 @@ Everything was built and tested on Linux with Herdr 0.1.16–0.1.17. "Written fo
 | `projects` | Tested | Written for | Written for | 0.1.16+ | Nothing; PowerShell on Windows for roots outside your home folder |
 | `viewer` | Tested | Written for | Written for | **0.1.17+** (terminal link handlers) | Node 22+, `git`; Chrome, Chromium or Edge for web pages and `.html` |
 | `updates` | Tested | Written for | Written for | 0.1.16+ | `git` |
+| `installed` | Tested (list only) | Written for | Written for | 0.1.16+ | An agent CLI for the buttons (`claude` by default) |
 
 ## Installing
 
@@ -57,6 +59,7 @@ Folders:
 - https://github.com/rootsong0220/herdr-mods/tree/main/projects
 - https://github.com/rootsong0220/herdr-mods/tree/main/viewer
 - https://github.com/rootsong0220/herdr-mods/tree/main/updates
+- https://github.com/rootsong0220/herdr-mods/tree/main/installed
 
 Each folder's `RECIPE.md` is written for the installing agent.
 
@@ -67,7 +70,7 @@ Installed mods are copies: they don't update by themselves. The [`updates`](upda
 ```
 Update what I installed from https://github.com/rootsong0220/herdr-mods to the latest version.
 - Get the latest version tag the way the install prompt in its README does (a git clone of the tag, or the tag's zip). Don't read the repo through web pages or raw.githubusercontent.com (cached up to 5 minutes).
-- Find what I installed from it in my Herdr home: the mods (inbox, recent, projects, viewer, sysmon, updates, or the names they were installed under) and the layouts (all-in-one, sysmon-status).
+- Find what I installed from it in my Herdr home: the mods (inbox, recent, projects, viewer, sysmon, updates, installed, or the names they were installed under) and the layouts (all-in-one, sysmon-status).
 - For each mod, compare its .herdr-mods-version (older installs have .herdr-mods-commit instead) with the tag, and diff every file against the repo folder. Don't call it up to date without a diff.
 - For each layout, show me the diff against the repo's and ask before changing it. Keep blocks I added myself.
 - If updates (the update notice) isn't installed, ask whether to install it, following updates/RECIPE.md.
