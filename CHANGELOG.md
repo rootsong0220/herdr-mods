@@ -1,17 +1,14 @@
 # Changelog
 
-Versions are git tags. The install and update prompts in the README take the latest one, and the [`updates`](updates/RECIPE.md) mod announces new ones. Release with `scripts/release.sh <X.Y.Z>` after adding its section here.
-
-## v0.3.0 — 2026-11-27
-
-- New [`installed`](installed/RECIPE.md) mod: a `Mods` row in the sidebar (above `Settings`, `N behind` when mods are out of date) and `alt-m` open a list of the mods installed from this repo, with their versions, layouts and keys. Its Update and Remove buttons start your agent in a new tab to update or remove that one mod. Mods copied by hand under this repo's names show as `version unknown`. `all-in-one` includes it.
-
-## v0.2.0 — 2026-11-27
-
-- New [`updates`](updates/RECIPE.md) mod: a toast once a day when a newer version is out. `all-in-one` includes it.
-- The install and update prompts fetch the latest version tag instead of `main`, and record it in `.herdr-mods-version` (replacing `.herdr-mods-commit`). The update prompt also updates installed layouts and offers to install `updates`.
+Versions are git tags. The install and update prompts in the README take the latest one, the [`updates`](updates/RECIPE.md) mod announces new ones, and [`installed`](installed/RECIPE.md) shows which one each mod is at. Release with `scripts/release.sh <X.Y.Z>` after adding its section here.
 
 ## v0.1.0 — 2026-11-27
 
-- First tagged version: `all-in-one`, `sysmon-status`, `inbox`, `recent`, `projects`, `viewer` and `keymap`.
-- `viewer`: Ctrl-clicking another file while a viewer is open replaces its content instead of showing a render error.
+First version.
+
+- Layouts: `all-in-one` (everything below, with a choice of keys) and `sysmon-status` (CPU / memory meter in the status bar, Linux).
+- Mods: `inbox`, `recent`, `projects`, `viewer`, plus:
+  - `updates`: a toast once a day when a newer version is out.
+  - `installed`: a `Mods` row in the sidebar (and `alt-m`) opening the list of installed mods with their versions, layouts and keys. Update and Remove buttons start your agent in a new tab for that one mod. Mods from elsewhere are listed under `Other mods`, without buttons.
+- `keymap`: the author's keys, to merge into yours.
+- The install and update prompts fetch the latest version tag and record it in `.herdr-mods-version` (replacing `.herdr-mods-commit` from earlier installs).
